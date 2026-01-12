@@ -6,6 +6,8 @@ import {
 } from "../../api/gallery.api";
 import type { GalleryItemDto } from "../../api/gallery.api";
 
+import { emitActivity } from "../../features/activityStore";
+
 export default function AdminGalleryPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<GalleryItemDto[]>([]);
@@ -20,6 +22,7 @@ export default function AdminGalleryPage() {
 
     try {
       await deleteGalleryItem(item.id);
+      emitActivity("REMOVE_GALLERY");
 
       setItems(items =>
         items.filter(i => i.id !== item.id)
@@ -31,37 +34,36 @@ export default function AdminGalleryPage() {
   };
 
   const sortItems = (type: string) => {
-  setItems(items => {
-    const sorted = [...items];
+    setItems(items => {
+      const sorted = [...items];
 
-    switch (type) {
-      case "title-asc":
-        sorted.sort((a, b) =>
-          (a.title ?? "").localeCompare(b.title ?? "", "pl")
-        );
-        break;
+      switch (type) {
+        case "title-asc":
+          sorted.sort((a, b) =>
+            (a.title ?? "").localeCompare(b.title ?? "", "pl")
+          );
+          break;
 
-      case "title-desc":
-        sorted.sort((a, b) =>
-          (b.title ?? "").localeCompare(a.title ?? "", "pl")
-        );
-        break;
+        case "title-desc":
+          sorted.sort((a, b) =>
+            (b.title ?? "").localeCompare(a.title ?? "", "pl")
+          );
+          break;
 
-      case "price-asc":
-        sorted.sort((a, b) => a.price - b.price);
-        break;
+        case "price-asc":
+          sorted.sort((a, b) => a.price - b.price);
+          break;
 
-      case "price-desc":
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-    }
+        case "price-desc":
+          sorted.sort((a, b) => b.price - a.price);
+          break;
+      }
 
-    return sorted;
-  });
+      return sorted;
+    });
 
-  setSortOpen(false);
-};
-
+    setSortOpen(false);
+  };
 
   return (
     <div className="admin-root">

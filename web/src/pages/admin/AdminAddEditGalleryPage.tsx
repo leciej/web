@@ -10,6 +10,8 @@ import type {
   UpdateGalleryItemRequestDto,
 } from "../../api/gallery.api";
 
+import { emitActivity } from "../../features/activityStore";
+
 export default function AdminAddEditGalleryPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -63,7 +65,7 @@ export default function AdminAddEditGalleryPage() {
   }, [id, isEdit, navigate]);
 
   /* =========================
-     BLOB CLEANUP (IMPORTANT)
+     BLOB CLEANUP
      ========================= */
   useEffect(() => {
     return () => {
@@ -81,8 +83,6 @@ export default function AdminAddEditGalleryPage() {
 
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
-
-    // imageUrl NIE ruszamy (backend nie obsługuje plików)
   };
 
   const handleImageUrlChange = (url: string) => {
@@ -115,12 +115,12 @@ export default function AdminAddEditGalleryPage() {
           price: numericPrice,
         };
 
-        // imageUrl wysyłamy TYLKO jeśli użytkownik go podał
         if (imageUrl.trim()) {
           payload.imageUrl = imageUrl.trim();
         }
 
         await updateGalleryItem(id, payload);
+        emitActivity("EDIT_GALLERY");
       } else {
         const payload: CreateGalleryItemRequestDto = {
           title: title.trim(),
@@ -130,6 +130,7 @@ export default function AdminAddEditGalleryPage() {
         };
 
         await createGalleryItem(payload);
+        emitActivity("ADD_GALLERY");
       }
 
       navigate("/admin/gallery");
@@ -214,14 +215,18 @@ export default function AdminAddEditGalleryPage() {
                   className="form-input"
                   placeholder="URL obrazu"
                   value={imageUrl}
-                  onChange={e => handleImageUrlChange(e.target.value)}
+                  onChange={e =>
+                    handleImageUrlChange(e.target.value)
+                  }
                 />
 
                 <input
                   type="file"
                   accept="image/*"
                   onChange={e =>
-                    handleFileChange(e.target.files?.[0] ?? null)
+                    handleFileChange(
+                      e.target.files?.[0] ?? null
+                    )
                   }
                 />
               </>

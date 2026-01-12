@@ -6,6 +6,8 @@ import {
   type ProductDto,
 } from "../../api/products.api";
 
+import { emitActivity } from "../../features/activityStore";
+
 export default function AdminProductsPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ProductDto[]>([]);
@@ -22,6 +24,8 @@ export default function AdminProductsPage() {
     if (!confirm("Usunąć produkt?")) return;
 
     await deleteProduct(id);
+    emitActivity("REMOVE_PRODUCT");
+
     setItems(prev => prev.filter(p => p.id !== id));
   };
 
@@ -130,7 +134,10 @@ export default function AdminProductsPage() {
               ← Wstecz
             </button>
 
-            <Link to="/admin/products/add" className="admin-action primary">
+            <Link
+              to="/admin/products/add"
+              className="admin-action primary"
+            >
               ➕ Dodaj produkt
             </Link>
 
@@ -241,7 +248,9 @@ export default function AdminProductsPage() {
             </div>
 
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontWeight: 700 }}>{item.name}</div>
+              <div style={{ fontWeight: 700 }}>
+                {item.name}
+              </div>
 
               {item.description && (
                 <div

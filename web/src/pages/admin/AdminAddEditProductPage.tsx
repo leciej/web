@@ -7,6 +7,8 @@ import {
 } from "../../api/products.api";
 import type { CreateProductRequestDto } from "../../api/products.api";
 
+import { emitActivity } from "../../features/activityStore";
+
 export default function AdminAddEditProductPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -62,7 +64,6 @@ export default function AdminAddEditProductPage() {
   const handleFileChange = (file: File | null) => {
     if (!file) return;
 
-    // tylko lokalny preview (backend nie przyjmuje pliku)
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
   };
@@ -93,7 +94,6 @@ export default function AdminAddEditProductPage() {
       price: numericPrice,
     };
 
-    // imageUrl wysyłamy tylko jeśli to prawdziwy URL
     if (imageUrl && imageUrl.startsWith("http")) {
       payload.imageUrl = imageUrl.trim();
     }
@@ -101,8 +101,10 @@ export default function AdminAddEditProductPage() {
     try {
       if (isEdit && id) {
         await updateProduct(id, payload);
+        emitActivity("EDIT_PRODUCT");
       } else {
         await createProduct(payload);
+        emitActivity("ADD_PRODUCT");
       }
 
       navigate("/admin/products");
