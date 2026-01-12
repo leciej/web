@@ -6,7 +6,10 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import AfterLoginPage from "../pages/AfterLoginPage";
 
+import ProductsPage from "../pages/ProductsPage";
+import GalleryPage from "../pages/GalleryPage";
 import ProductDetailsPage from "../pages/ProductDetailsPage";
+
 import AdminStatsPage from "../pages/admin/AdminStatsPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboard";
 import AdminProfilePage from "../pages/admin/AdminProfilePage";
@@ -14,6 +17,13 @@ import AdminProductsPage from "../pages/admin/AdminProductsPage";
 import AdminGalleryPage from "../pages/admin/AdminGalleryPage";
 import AdminAddEditGalleryPage from "../pages/admin/AdminAddEditGalleryPage";
 import AdminAddEditProductPage from "../pages/admin/AdminAddEditProductPage";
+
+import UserDashboardPage from "../pages/user/UserDashboardPage";
+import UserProfilePage from "../pages/user/UserProfilePage";
+import UserProductsPage from "../pages/user/UserProductsPage";
+import UserProductDetailsPage from "../pages/user/UserProductDetailsPage";
+import UserGalleryPage from "../pages/user/UserGalleryPage";
+import UserGalleryDetailsPage from "../pages/user/UserGalleryDetailsPage"; // ✅ DODANE
 
 export default function AppRouter() {
   return (
@@ -25,14 +35,31 @@ export default function AppRouter() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/after-login" element={<AfterLoginPage />} />
 
-        {/* PRODUCT DETAILS (PUBLIC) */}
+        {/* PUBLIC CONTENT */}
+        <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductDetailsPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
+
+        {/* USER */}
+        <Route path="/user/dashboard" element={<UserDashboardPage />} />
+        <Route path="/user/profile" element={<UserProfilePage />} />
+
+        <Route path="/user/products" element={<UserProductsPage />} />
+        <Route
+          path="/user/products/:id"
+          element={<UserProductDetailsPage />}
+        />
+
+        <Route path="/user/gallery" element={<UserGalleryPage />} />
+        <Route
+          path="/user/gallery/:id"
+          element={<UserGalleryDetailsPage />}
+        />
 
         {/* ADMIN */}
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/profile" element={<AdminProfilePage />} />
 
-        {/* PRODUCTS (ADMIN) */}
         <Route path="/admin/products" element={<AdminProductsPage />} />
         <Route
           path="/admin/products/add"
@@ -43,7 +70,6 @@ export default function AppRouter() {
           element={<AdminAddEditProductPage />}
         />
 
-        {/* GALLERY (ADMIN) */}
         <Route path="/admin/gallery" element={<AdminGalleryPage />} />
         <Route
           path="/admin/gallery/add"
@@ -53,6 +79,8 @@ export default function AppRouter() {
           path="/admin/gallery/edit/:id"
           element={<AdminAddEditGalleryPage />}
         />
+
+        {/* ADMIN STATS */}
         <Route path="/admin/stats" element={<AdminStatsPage />} />
       </Route>
     </Routes>

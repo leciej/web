@@ -1,4 +1,4 @@
-import { http } from "./http";
+import { http } from './http';
 
 /* ========= DTO ========= */
 
@@ -12,14 +12,7 @@ export interface ProductDto {
 
 export interface CreateProductRequestDto {
   name: string;
-  description?: string;
-  price: number;
-  imageUrl?: string;
-}
-
-export interface UpdateProductRequestDto {
-  name: string;
-  description?: string;
+  description: string;
   price: number;
   imageUrl?: string;
 }
@@ -27,7 +20,7 @@ export interface UpdateProductRequestDto {
 /* ========= ITEMS ========= */
 
 export function getProducts() {
-  return http.get<ProductDto[]>("/api/products");
+  return http.get<ProductDto[]>('/api/products');
 }
 
 export function getProduct(id: string) {
@@ -35,26 +28,16 @@ export function getProduct(id: string) {
 }
 
 export function createProduct(
-  payload: CreateProductRequestDto
+  dto: CreateProductRequestDto
 ) {
-  return http.post<ProductDto>(
-    "/api/products",
-    payload
-  );
+  return http.post<ProductDto>('/api/products', dto);
 }
 
-/**
- * ⚠️ BACKEND DLA PRODUKTÓW:
- * [HttpPatch("{id}")]
- */
 export function updateProduct(
   id: string,
-  payload: UpdateProductRequestDto
+  dto: CreateProductRequestDto
 ) {
-  return http.patch<ProductDto>(
-    `/api/products/${id}`,
-    payload
-  );
+  return http.put<void>(`/api/products/${id}`, dto);
 }
 
 export function deleteProduct(id: string) {
