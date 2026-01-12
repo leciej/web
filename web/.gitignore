@@ -1,0 +1,8 @@
+# frontend build/cache
+.vite/
+web_old/
+src.zip
+reflog.txt
+node_modules/
+echo src2.zip >> .gitignore
+echo web/src2.zip >> .gitignore
