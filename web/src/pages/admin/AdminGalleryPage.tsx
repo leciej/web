@@ -1,23 +1,67 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getGallery } from "../../api/gallery.api";
+import {
+  getGallery,
+  deleteGalleryItem,
+} from "../../api/gallery.api";
 import type { GalleryItemDto } from "../../api/gallery.api";
 
 export default function AdminGalleryPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<GalleryItemDto[]>([]);
+  const [sortOpen, setSortOpen] = useState(false);
 
   useEffect(() => {
     getGallery().then(setItems);
   }, []);
 
-  const handleDelete = (item: GalleryItemDto) => {
-    if (confirm(`Usunąć „${item.title}”?`)) {
-      console.log("DELETE ITEM:", item.id);
-      // TODO: wywołanie API delete
-      // po sukcesie: setItems(items => items.filter(i => i.id !== item.id))
+  const handleDelete = async (item: GalleryItemDto) => {
+    if (!confirm(`Usunąć „${item.title}”?`)) return;
+
+    try {
+      await deleteGalleryItem(item.id);
+
+      setItems(items =>
+        items.filter(i => i.id !== item.id)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Nie udało się usunąć arcydzieła");
     }
   };
+
+  const sortItems = (type: string) => {
+  setItems(items => {
+    const sorted = [...items];
+
+    switch (type) {
+      case "title-asc":
+        sorted.sort((a, b) =>
+          (a.title ?? "").localeCompare(b.title ?? "", "pl")
+        );
+        break;
+
+      case "title-desc":
+        sorted.sort((a, b) =>
+          (b.title ?? "").localeCompare(a.title ?? "", "pl")
+        );
+        break;
+
+      case "price-asc":
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+
+      case "price-desc":
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+    }
+
+    return sorted;
+  });
+
+  setSortOpen(false);
+};
+
 
   return (
     <div className="admin-root">
@@ -30,7 +74,7 @@ export default function AdminGalleryPage() {
           gap: 24,
         }}
       >
-        {/* ───────────── HEADER (VARIANT A) ───────────── */}
+        {/* ───────────── HEADER ───────────── */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -75,6 +119,63 @@ export default function AdminGalleryPage() {
             >
               ➕ Dodaj arcydzieło
             </Link>
+
+            {/* ───────────── SORT HAMBURGER ───────────── */}
+            <div style={{ position: "relative" }}>
+              <button
+                className="admin-action secondary"
+                style={{
+                  height: 44,
+                  width: 44,
+                  fontSize: 22,
+                  padding: 0,
+                }}
+                onClick={() => setSortOpen(o => !o)}
+              >
+                ☰
+              </button>
+
+              {sortOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 52,
+                    right: 0,
+                    background: "rgba(20,20,20,0.95)",
+                    borderRadius: 12,
+                    padding: 8,
+                    minWidth: 200,
+                    boxShadow: "0 10px 30px rgba(0,0,0,.4)",
+                    zIndex: 20,
+                  }}
+                >
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("title-asc")}
+                  >
+                    Tytuł A–Z
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("title-desc")}
+                  >
+                    Tytuł Z–A
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("price-asc")}
+                  >
+                    Cena ↑
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("price-desc")}
+                  >
+                    Cena ↓
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -132,6 +233,7 @@ export default function AdminGalleryPage() {
               <div style={{ fontWeight: 700 }}>
                 {item.title}
               </div>
+
               <div
                 style={{
                   fontSize: 13,
@@ -141,12 +243,22 @@ export default function AdminGalleryPage() {
               >
                 {item.artist}
               </div>
+
+              <div
+                style={{
+                  marginTop: 6,
+                  fontWeight: 800,
+                  fontSize: 14,
+                }}
+              >
+                {item.price.toFixed(2)} zł
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ───────────── STYLES (HOVER) ───────────── */}
+      {/* ───────────── STYLES ───────────── */}
       <style>{`
         .gallery-hover {
           position: absolute;
@@ -203,6 +315,23 @@ export default function AdminGalleryPage() {
 
         .hover-action:hover {
           filter: brightness(1.05);
+        }
+
+        .sort-item {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          background: transparent;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 600;
+          text-align: left;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+
+        .sort-item:hover {
+          background: rgba(255,255,255,0.08);
         }
       `}</style>
     </div>

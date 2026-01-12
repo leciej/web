@@ -10,14 +10,6 @@ export interface GalleryItemDto {
   imageUrl?: string;
 }
 
-export interface GalleryRatingSummaryDto {
-  average: number;
-  votes: number;
-  myRating?: number | null;
-}
-
-/* ========= CREATE / UPDATE DTO ========= */
-
 export interface CreateGalleryItemRequestDto {
   title: string;
   artist: string;
@@ -51,6 +43,9 @@ export function createGalleryItem(
   );
 }
 
+/**
+ * ✅ BACKEND: PUT /api/gallery/{id}
+ */
 export function updateGalleryItem(
   id: string,
   payload: UpdateGalleryItemRequestDto
@@ -61,25 +56,11 @@ export function updateGalleryItem(
   );
 }
 
-/* ========= RATINGS ========= */
-
-export function getGalleryRating(
-  id: string,
-  userId?: number
-) {
-  return http.get<GalleryRatingSummaryDto>(
-    `/api/gallery/${id}/ratings`,
-    userId ? { userId } : undefined
-  );
-}
-
-export function rateGalleryItem(
-  id: string,
-  userId: number,
-  value: number
-) {
-  return http.post<void>(
-    `/api/gallery/${id}/ratings`,
-    { userId, value }
+/**
+ * ✅ BACKEND: DELETE /api/gallery/{id}
+ */
+export function deleteGalleryItem(id: string) {
+  return http.delete<void>(
+    `/api/gallery/${id}`
   );
 }

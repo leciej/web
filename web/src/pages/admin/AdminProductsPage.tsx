@@ -10,6 +10,7 @@ export default function AdminProductsPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ProductDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortOpen, setSortOpen] = useState(false);
 
   useEffect(() => {
     getProducts()
@@ -24,11 +25,43 @@ export default function AdminProductsPage() {
     setItems(prev => prev.filter(p => p.id !== id));
   };
 
+  const sortItems = (type: string) => {
+    setItems(items => {
+      const sorted = [...items];
+
+      switch (type) {
+        case "name-asc":
+          sorted.sort((a, b) =>
+            (a.name ?? "").localeCompare(b.name ?? "", "pl")
+          );
+          break;
+
+        case "name-desc":
+          sorted.sort((a, b) =>
+            (b.name ?? "").localeCompare(a.name ?? "", "pl")
+          );
+          break;
+
+        case "price-asc":
+          sorted.sort((a, b) => a.price - b.price);
+          break;
+
+        case "price-desc":
+          sorted.sort((a, b) => b.price - a.price);
+          break;
+      }
+
+      return sorted;
+    });
+
+    setSortOpen(false);
+  };
+
   if (loading) return <p>Ładowanie produktów…</p>;
 
   return (
     <div className="admin-root">
-      {/* lokalny CSS: pokazuje overlay na hover */}
+      {/* lokalny CSS */}
       <style>{`
         .product-tile .product-actions {
           opacity: 0;
@@ -38,6 +71,23 @@ export default function AdminProductsPage() {
         .product-tile:hover .product-actions {
           opacity: 1;
           pointer-events: auto;
+        }
+
+        .sort-item {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          background: transparent;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 600;
+          text-align: left;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+
+        .sort-item:hover {
+          background: rgba(255,255,255,0.08);
         }
       `}</style>
 
@@ -83,6 +133,63 @@ export default function AdminProductsPage() {
             <Link to="/admin/products/add" className="admin-action primary">
               ➕ Dodaj produkt
             </Link>
+
+            {/* SORT HAMBURGER */}
+            <div style={{ position: "relative" }}>
+              <button
+                className="admin-action secondary"
+                style={{
+                  height: 44,
+                  width: 44,
+                  fontSize: 22,
+                  padding: 0,
+                }}
+                onClick={() => setSortOpen(o => !o)}
+              >
+                ☰
+              </button>
+
+              {sortOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 52,
+                    right: 0,
+                    background: "rgba(20,20,20,0.95)",
+                    borderRadius: 12,
+                    padding: 8,
+                    minWidth: 200,
+                    boxShadow: "0 10px 30px rgba(0,0,0,.4)",
+                    zIndex: 20,
+                  }}
+                >
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("name-asc")}
+                  >
+                    Nazwa A–Z
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("name-desc")}
+                  >
+                    Nazwa Z–A
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("price-asc")}
+                  >
+                    Cena ↑
+                  </button>
+                  <button
+                    className="sort-item"
+                    onClick={() => sortItems("price-desc")}
+                  >
+                    Cena ↓
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
