@@ -57,7 +57,7 @@ export default function AdminGalleryPage() {
             <button
               className="admin-action secondary"
               style={{ height: 44, minWidth: 160 }}
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/admin/dashboard")}
             >
               ← Wstecz
             </button>

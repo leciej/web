@@ -5,7 +5,10 @@ import {
   createGalleryItem,
   updateGalleryItem,
 } from "../../api/gallery.api";
-import type { CreateGalleryItemRequestDto } from "../../api/gallery.api";
+import type {
+  CreateGalleryItemRequestDto,
+  UpdateGalleryItemRequestDto,
+} from "../../api/gallery.api";
 
 export default function AdminAddEditGalleryPage() {
   const navigate = useNavigate();
@@ -46,6 +49,9 @@ export default function AdminAddEditGalleryPage() {
         setPrice(item.price != null ? String(item.price) : "");
         setImageUrl(item.imageUrl ?? "");
         setPreviewUrl(item.imageUrl ?? "");
+      } catch {
+        alert("Nie udało się załadować arcydzieła");
+        navigate(-1);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -57,16 +63,26 @@ export default function AdminAddEditGalleryPage() {
   }, [id, isEdit, navigate]);
 
   /* =========================
+     BLOB CLEANUP (IMPORTANT)
+     ========================= */
+  useEffect(() => {
+    return () => {
+      if (previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  /* =========================
      IMAGE
      ========================= */
   const handleFileChange = (file: File | null) => {
     if (!file) return;
 
-    // preview TYLKO lokalnie
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
 
-    // NIE ruszamy imageUrl (backend tego nie przyjmie)
+    // imageUrl NIE ruszamy (backend nie obsługuje plików)
   };
 
   const handleImageUrlChange = (url: string) => {
@@ -75,7 +91,7 @@ export default function AdminAddEditGalleryPage() {
   };
 
   /* =========================
-     SAVE (BACKEND SAFE)
+     SAVE
      ========================= */
   const save = async () => {
     if (!title.trim() || !artist.trim() || !price.trim()) {
@@ -90,20 +106,29 @@ export default function AdminAddEditGalleryPage() {
     }
 
     try {
-      const payload: CreateGalleryItemRequestDto = {
-        title: title.trim(),
-        artist: artist.trim(),
-        price: numericPrice,
-      };
-
-      // imageUrl wysyłamy TYLKO jeśli to prawdziwy URL
-      if (imageUrl && imageUrl.startsWith("http")) {
-        payload.imageUrl = imageUrl.trim();
-      }
+      setLoading(true);
 
       if (isEdit && id) {
+        const payload: UpdateGalleryItemRequestDto = {
+          title: title.trim(),
+          artist: artist.trim(),
+          price: numericPrice,
+        };
+
+        // imageUrl wysyłamy TYLKO jeśli użytkownik go podał
+        if (imageUrl.trim()) {
+          payload.imageUrl = imageUrl.trim();
+        }
+
         await updateGalleryItem(id, payload);
       } else {
+        const payload: CreateGalleryItemRequestDto = {
+          title: title.trim(),
+          artist: artist.trim(),
+          price: numericPrice,
+          imageUrl: imageUrl.trim(),
+        };
+
         await createGalleryItem(payload);
       }
 
@@ -111,6 +136,8 @@ export default function AdminAddEditGalleryPage() {
     } catch (err) {
       console.error(err);
       alert("Nie udało się zapisać arcydzieła");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -253,7 +280,7 @@ export default function AdminAddEditGalleryPage() {
 
             {price && (
               <div style={{ marginTop: 6, fontWeight: 800 }}>
-                {price} zł
+                {Number(price).toFixed(2)} zł
               </div>
             )}
           </div>
@@ -278,6 +305,7 @@ export default function AdminAddEditGalleryPage() {
             className="admin-action primary"
             onClick={save}
             style={{ minWidth: 160 }}
+            disabled={loading}
           >
             Zapisz
           </button>

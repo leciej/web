@@ -55,7 +55,7 @@ export function updateGalleryItem(
   id: string,
   payload: UpdateGalleryItemRequestDto
 ) {
-  return http.patch<GalleryItemDto>(   // ← TU JEST FIX
+  return http.put<GalleryItemDto>(
     `/api/gallery/${id}`,
     payload
   );

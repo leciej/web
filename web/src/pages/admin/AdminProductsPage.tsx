@@ -75,7 +75,7 @@ export default function AdminProductsPage() {
           <div style={{ display: "flex", gap: 16 }}>
             <button
               className="admin-action secondary"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/admin/dashboard")}
             >
               ← Wstecz
             </button>
