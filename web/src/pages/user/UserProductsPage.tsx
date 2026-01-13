@@ -1,90 +1,96 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { getProducts, type ProductDto } from "../../api/products.api";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/UserContext";
+import { http } from "../../api/http";
 
-export default function UserProductsPage() {
+/* =========================
+   TYPES
+   ========================= */
+
+type UserStatsDto = {
+  purchasedCount: number;
+  totalSpent: number;
+  ratedCount: number;
+  averageRating: number;
+  commentsCount: number;
+};
+
+type ActivityDto = {
+  type: string;
+  createdAt: string;
+};
+
+type ActivityResponseDto = {
+  items: ActivityDto[];
+};
+
+/* =========================
+   HELPERS
+   ========================= */
+
+const label = (type: string) =>
+  ({
+    COMMENT: "💬 Dodano komentarz",
+    RATING: "⭐ Dodano ocenę",
+    PURCHASE: "🛒 Złożono zamówienie",
+    ADD_TO_CART: "➕ Dodano do koszyka",
+    REMOVE_FROM_CART: "🗑 Usunięto z koszyka",
+  }[type] ?? "—");
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "przed chwilą";
+  if (min < 60) return `${min} min temu`;
+  const h = Math.floor(min / 60);
+  return `${h} h temu`;
+}
+
+/* =========================
+   SCREEN
+   ========================= */
+
+export default function UserProfilePage() {
+  const { user, logout } = useUser();
   const navigate = useNavigate();
-  const [items, setItems] = useState<ProductDto[]>([]);
+
+  const [stats, setStats] = useState<UserStatsDto | null>(null);
+  const [activities, setActivities] = useState<ActivityDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortOpen, setSortOpen] = useState(false);
 
   useEffect(() => {
-    getProducts()
-      .then(setItems)
+    if (!user?.id) return;
+
+    Promise.all([
+      http.get<UserStatsDto>(`/api/users/${user.id}/stats`),
+      http.get<ActivityResponseDto>(`/api/activity?viewerUserId=${user.id}`),
+    ])
+      .then(([statsRes, activityRes]) => {
+        setStats(statsRes);
+        setActivities(activityRes.items ?? []);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.id]);
 
-  const sortItems = (type: string) => {
-    setItems(items => {
-      const sorted = [...items];
+  if (!user) return null;
 
-      switch (type) {
-        case "name-asc":
-          sorted.sort((a, b) =>
-            (a.name ?? "").localeCompare(b.name ?? "", "pl")
-          );
-          break;
+  const displayName =
+    user.login ||
+    user.email?.split("@")[0] ||
+    "Użytkownik";
 
-        case "name-desc":
-          sorted.sort((a, b) =>
-            (b.name ?? "").localeCompare(a.name ?? "", "pl")
-          );
-          break;
+  const avatarLetter = displayName[0]?.toUpperCase() ?? "U";
 
-        case "price-asc":
-          sorted.sort((a, b) => a.price - b.price);
-          break;
-
-        case "price-desc":
-          sorted.sort((a, b) => b.price - a.price);
-          break;
-      }
-
-      return sorted;
-    });
-
-    setSortOpen(false);
-  };
-
-  if (loading) return <p>Ładowanie produktów…</p>;
+  if (loading) return <p>Ładowanie profilu…</p>;
 
   return (
     <div className="admin-root">
-      <style>{`
-        .sort-item {
-          width: 100%;
-          padding: 10px 14px;
-          border: none;
-          background: transparent;
-          color: #fff;
-          font-size: 14px;
-          font-weight: 600;
-          text-align: left;
-          border-radius: 8px;
-          cursor: pointer;
-        }
-
-        .sort-item:hover {
-          background: rgba(255,255,255,0.08);
-        }
-
-        .user-product-tile {
-          text-decoration: none;
-          color: inherit;
-          display: block;
-        }
-
-        .user-product-tile:hover {
-          filter: brightness(1.02);
-        }
-      `}</style>
-
       <div
         style={{
-          maxWidth: 1600,
+          maxWidth: 1200,
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
           gap: 24,
         }}
       >
@@ -96,143 +102,107 @@ export default function UserProductsPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 16,
+            gap: 12,
             textAlign: "center",
           }}
         >
           <div
             style={{
-              fontSize: 22,
+              width: 80,
+              height: 80,
+              borderRadius: "50%",
+              background: "#2563eb",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 32,
               fontWeight: 800,
-              color: "rgba(255,255,255,0.95)",
             }}
           >
-            Produkty
+            {avatarLetter}
           </div>
 
-          <div style={{ display: "flex", gap: 16 }}>
-            <button
-              className="admin-action secondary"
-              onClick={() => navigate("/user/dashboard")}
-            >
-              ← Wstecz
-            </button>
+          <div style={{ fontSize: 22, fontWeight: 800 }}>
+            {displayName}
+          </div>
 
-            <div style={{ position: "relative" }}>
-              <button
-                className="admin-action secondary"
-                style={{
-                  height: 44,
-                  width: 44,
-                  fontSize: 22,
-                  padding: 0,
-                }}
-                onClick={() => setSortOpen(o => !o)}
-              >
-                ☰
-              </button>
-
-              {sortOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 52,
-                    right: 0,
-                    background: "rgba(20,20,20,0.95)",
-                    borderRadius: 12,
-                    padding: 8,
-                    minWidth: 200,
-                    boxShadow: "0 10px 30px rgba(0,0,0,.4)",
-                    zIndex: 20,
-                  }}
-                >
-                  <button className="sort-item" onClick={() => sortItems("name-asc")}>
-                    Nazwa A–Z
-                  </button>
-                  <button className="sort-item" onClick={() => sortItems("name-desc")}>
-                    Nazwa Z–A
-                  </button>
-                  <button className="sort-item" onClick={() => sortItems("price-asc")}>
-                    Cena ↑
-                  </button>
-                  <button className="sort-item" onClick={() => sortItems("price-desc")}>
-                    Cena ↓
-                  </button>
-                </div>
-              )}
+          {user.email && (
+            <div style={{ fontSize: 13, opacity: 0.7 }}>
+              {user.email}
             </div>
+          )}
+
+          <div
+            style={{
+              marginTop: 4,
+              padding: "6px 14px",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.2)",
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            👤 Użytkownik
           </div>
         </div>
 
-        {/* GRID */}
-        {items.map(item => (
-          <Link
-            key={item.id}
-            to={`/user/products/${item.id}`}
-            className="admin-block glass user-product-tile"
-            style={{
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: 160,
-                overflow: "hidden",
-                borderRadius: 16,
-                marginBottom: 10,
-              }}
-            >
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    background: "rgba(255,255,255,0.15)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    opacity: 0.7,
-                  }}
-                >
-                  Brak obrazu
-                </div>
-              )}
+        {/* AKTYWNOŚĆ */}
+        <div className="admin-block glass">
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>
+            Ostatnia aktywność
+          </div>
+
+          {activities.length === 0 ? (
+            <div style={{ fontStyle: "italic", opacity: 0.7 }}>
+              Brak aktywności
             </div>
-
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontWeight: 700 }}>{item.name}</div>
-
-              {item.description && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    opacity: 0.7,
-                    marginTop: 2,
-                  }}
-                >
-                  {item.description}
+          ) : (
+            activities.slice(0, 5).map((a, i) => (
+              <div key={i} style={{ marginBottom: 6 }}>
+                <div>{label(a.type)}</div>
+                <div style={{ fontSize: 12, opacity: 0.6 }}>
+                  {timeAgo(a.createdAt)}
                 </div>
-              )}
-
-              <div style={{ marginTop: 6, fontWeight: 800 }}>
-                {item.price} zł
               </div>
+            ))
+          )}
+        </div>
+
+        {/* STATYSTYKI */}
+        <div className="admin-block glass">
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>
+            Twoje statystyki
+          </div>
+
+          {stats && (
+            <div style={{ fontSize: 14, lineHeight: 1.8 }}>
+              <div>✅ Kupione produkty: {stats.purchasedCount}</div>
+              <div>💸 Wydane pieniądze: {stats.totalSpent.toFixed(2)} zł</div>
+              <div>⭐ Ocenione: {stats.ratedCount}</div>
+              <div>⭐ Średnia: {stats.averageRating.toFixed(1)}</div>
+              <div>💬 Komentarze: {stats.commentsCount}</div>
             </div>
-          </Link>
-        ))}
+          )}
+        </div>
+
+        {/* ACTIONS */}
+        <div className="admin-block glass">
+          <button
+            className="admin-action secondary"
+            onClick={() => navigate("/user/dashboard")}
+          >
+            ← Wstecz
+          </button>
+
+          <button
+            className="admin-action"
+            style={{ marginTop: 12 }}
+            onClick={logout}
+          >
+            WYLOGUJ SIĘ
+          </button>
+        </div>
       </div>
     </div>
   );
