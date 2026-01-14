@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createGuest, login } from "../api/users.api";
 import { useUser } from "../context/UserContext";
 import { AuthLayout } from "../layout/AuthLayout";
+import type { User } from "../types/User";
 
 type Mode = "user" | "admin" | null;
 
@@ -17,15 +18,21 @@ export default function LoginPage() {
 
   const handleLogin = async (target: "user" | "admin") => {
     try {
-      const user = await login(loginOrEmail, password);
+      const apiUser = await login(loginOrEmail, password);
 
-      setUser({
-        ...user,
+      console.log("API USER:", apiUser);
+
+      const fullUser: User = {
+        ...apiUser,
         isAdmin: target === "admin",
-      } as any);
+      };
+
+      setUser(fullUser);
+      localStorage.setItem("user", JSON.stringify(fullUser));
 
       navigate("/after-login");
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Nieprawidłowe dane logowania");
     }
   };
@@ -42,17 +49,31 @@ export default function LoginPage() {
       <div className="auth-card">
         <h1 className="login-title">Guten Tag twoja mać!</h1>
 
+        {/* GUEST */}
         <button
           className="login-button guest"
           onClick={async () => {
-            const user = await createGuest();
-            setUser({ ...user, isAdmin: false } as any);
-            navigate("/after-login");
+            try {
+              const apiUser = await createGuest();
+
+              const fullUser: User = {
+                ...apiUser,
+                isAdmin: false,
+              };
+
+              setUser(fullUser);
+              localStorage.setItem("user", JSON.stringify(fullUser));
+              navigate("/after-login");
+            } catch (err) {
+              console.error(err);
+              alert("Nie udało się zalogować jako gość");
+            }
           }}
         >
           Zaloguj jako gość
         </button>
 
+        {/* USER */}
         <button
           className="login-button user"
           onClick={() => toggleMode("user")}
@@ -60,11 +81,7 @@ export default function LoginPage() {
           Zaloguj jako użytkownik
         </button>
 
-        <div
-          className={`login-form animated ${
-            mode === "user" ? "open" : ""
-          }`}
-        >
+        <div className={`login-form animated ${mode === "user" ? "open" : ""}`}>
           <input
             className="login-input"
             placeholder="Login lub email"
@@ -97,6 +114,7 @@ export default function LoginPage() {
           </button>
         </div>
 
+        {/* ADMIN */}
         <button
           className="login-button admin"
           onClick={() => toggleMode("admin")}
@@ -104,11 +122,7 @@ export default function LoginPage() {
           Zaloguj jako admin
         </button>
 
-        <div
-          className={`login-form animated ${
-            mode === "admin" ? "open" : ""
-          }`}
-        >
+        <div className={`login-form animated ${mode === "admin" ? "open" : ""}`}>
           <input
             className="login-input"
             placeholder="Login lub email administratora"
