@@ -53,14 +53,14 @@ export default function UserGalleryDetailsPage() {
   }, [id, navigate]);
 
   /* =========================
-     LOAD RATINGS
+     LOAD RATINGS (Z BAZY)
   ========================= */
 
   useEffect(() => {
     if (!id) return;
 
     http
-      .get<RatingResponse>(`/gallery/${id}/ratings`)
+      .get<RatingResponse>(`/api/gallery/${id}/ratings`)
       .then(res => setRating(res))
       .catch(() =>
         setRating({ average: 0, votes: 0, myRating: null })
@@ -68,16 +68,16 @@ export default function UserGalleryDetailsPage() {
   }, [id]);
 
   /* =========================
-     RATE
+     RATE (ZAPIS DO BAZY)
   ========================= */
 
   const rate = async (value: number) => {
     if (!id || rating.myRating !== null) return;
 
     try {
-      await http.post(`/gallery/${id}/ratings`, { value });
+      await http.post(`/api/gallery/${id}/ratings`, { value });
       const refreshed = await http.get<RatingResponse>(
-        `/gallery/${id}/ratings`
+        `/api/gallery/${id}/ratings`
       );
       setRating(refreshed);
     } catch {
@@ -119,7 +119,6 @@ export default function UserGalleryDetailsPage() {
             marginBottom: 28,
           }}
         >
-          {/* BACK */}
           <button
             className="admin-action secondary"
             onClick={() => navigate("/user/gallery")}
@@ -127,25 +126,23 @@ export default function UserGalleryDetailsPage() {
             ← Wróć
           </button>
 
-          {/* TITLE – PRAWDZIWY ŚRODEK */}
           <div
             style={{
               textAlign: "center",
               fontSize: 34,
               fontWeight: 900,
               letterSpacing: 0.5,
-              color: "rgba(255,255,255,0.92)", // ⬅ jak na poprzedniej stronie
+              color: "rgba(255,255,255,0.92)",
               userSelect: "none",
             }}
           >
             Szczegóły arcydzieła
           </div>
 
-          {/* PUSTA KOLUMNA – BALANS */}
           <div />
         </div>
 
-        {/* IMAGE */}
+        {/* IMAGE – CLICK TO ZOOM */}
         <div
           className="admin-block glass"
           style={{
@@ -154,7 +151,7 @@ export default function UserGalleryDetailsPage() {
             overflow: "hidden",
             cursor: "zoom-in",
           }}
-          onMouseEnter={() => setZoom(true)}
+          onClick={() => setZoom(true)}
         >
           <img
             src={item.imageUrl}
@@ -231,10 +228,10 @@ export default function UserGalleryDetailsPage() {
         </div>
       </div>
 
-      {/* ZOOM OVERLAY */}
+      {/* ZOOM OVERLAY – CLICK TO CLOSE */}
       {zoom && (
         <div
-          onMouseLeave={() => setZoom(false)}
+          onClick={() => setZoom(false)}
           style={{
             position: "fixed",
             inset: 0,
