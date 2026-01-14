@@ -1,15 +1,27 @@
 import { Routes, Route } from "react-router-dom";
 import AppLayout from "../layout/AppLayout";
 
+/* ===== PUBLIC ===== */
 import SplashPage from "../pages/SplashPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import AfterLoginPage from "../pages/AfterLoginPage";
 
+/* ===== PUBLIC CONTENT ===== */
 import ProductsPage from "../pages/ProductsPage";
 import GalleryPage from "../pages/GalleryPage";
 import ProductDetailsPage from "../pages/ProductDetailsPage";
 
+/* ===== USER ===== */
+import UserDashboardPage from "../pages/user/UserDashboardPage";
+import UserProfilePage from "../pages/user/UserProfilePage";
+import UserProductsPage from "../pages/user/UserProductsPage";
+import UserProductDetailsPage from "../pages/user/UserProductDetailsPage";
+import UserGalleryPage from "../pages/user/UserGalleryPage";
+import UserGalleryDetailsPage from "../pages/user/UserGalleryDetailsPage";
+import UserCart from "../pages/CartPage"; // ✅ POPRAWNY IMPORT
+
+/* ===== ADMIN ===== */
 import AdminStatsPage from "../pages/admin/AdminStatsPage";
 import AdminDashboardPage from "../pages/admin/AdminDashboard";
 import AdminProfilePage from "../pages/admin/AdminProfilePage";
@@ -18,31 +30,26 @@ import AdminGalleryPage from "../pages/admin/AdminGalleryPage";
 import AdminAddEditGalleryPage from "../pages/admin/AdminAddEditGalleryPage";
 import AdminAddEditProductPage from "../pages/admin/AdminAddEditProductPage";
 
-import UserDashboardPage from "../pages/user/UserDashboardPage";
-import UserProfilePage from "../pages/user/UserProfilePage";
-import UserProductsPage from "../pages/user/UserProductsPage";
-import UserProductDetailsPage from "../pages/user/UserProductDetailsPage";
-import UserGalleryPage from "../pages/user/UserGalleryPage";
-import UserGalleryDetailsPage from "../pages/user/UserGalleryDetailsPage"; // ✅ DODANE
-
 export default function AppRouter() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        {/* PUBLIC */}
+
+        {/* ===== PUBLIC ===== */}
         <Route path="/" element={<SplashPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/after-login" element={<AfterLoginPage />} />
 
-        {/* PUBLIC CONTENT */}
+        {/* ===== PUBLIC CONTENT ===== */}
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductDetailsPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
 
-        {/* USER */}
+        {/* ===== USER ===== */}
         <Route path="/user/dashboard" element={<UserDashboardPage />} />
         <Route path="/user/profile" element={<UserProfilePage />} />
+        <Route path="/user/cart" element={<UserCart />} /> {/* ✅ DZIAŁA */}
 
         <Route path="/user/products" element={<UserProductsPage />} />
         <Route
@@ -56,7 +63,7 @@ export default function AppRouter() {
           element={<UserGalleryDetailsPage />}
         />
 
-        {/* ADMIN */}
+        {/* ===== ADMIN ===== */}
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/profile" element={<AdminProfilePage />} />
 
@@ -80,8 +87,9 @@ export default function AppRouter() {
           element={<AdminAddEditGalleryPage />}
         />
 
-        {/* ADMIN STATS */}
+        {/* ===== ADMIN STATS ===== */}
         <Route path="/admin/stats" element={<AdminStatsPage />} />
+
       </Route>
     </Routes>
   );
