@@ -36,14 +36,19 @@ export default function UserCart() {
     setItems(items.map(i => ({ ...i, checked })));
 
   const toggleOne = (id: number) =>
-    setItems(items.map(i => (i.id === id ? { ...i, checked: !i.checked } : i)));
+    setItems(items.map(i =>
+      i.id === id ? { ...i, checked: !i.checked } : i
+    ));
 
   const changeQty = (id: number, delta: number) =>
     setItems(items.map(i =>
-      i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i
+      i.id === id
+        ? { ...i, quantity: Math.max(1, i.quantity + delta) }
+        : i
     ));
 
-  const removeItem = (id: number) => setItems(items.filter(i => i.id !== id));
+  const removeItem = (id: number) =>
+    setItems(items.filter(i => i.id !== id));
 
   const total = items
     .filter(i => i.checked)
@@ -51,164 +56,199 @@ export default function UserCart() {
 
   const allChecked = items.length > 0 && items.every(i => i.checked);
 
+  const qtyButtonStyle: React.CSSProperties = {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    border: "none",
+    background: "rgba(255,255,255,0.12)",
+    color: "#fff",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18,
+    fontWeight: 700,
+    lineHeight: 1,
+  };
+
   return (
     <div className="admin-root">
-      {/* ===== NAGŁÓWEK NAD BLOKAMI ===== */}
       <h1 style={{ textAlign: "center", marginBottom: 36, fontWeight: 700 }}>
         Koszyk
       </h1>
 
-      {/* ===== GRID: BLOKI WIĘKSZE ===== */}
       <div
         className="admin-grid"
         style={{
-          gridTemplateColumns: "3.4fr 1.6fr", // lewy wyraźnie większy
+          gridTemplateColumns: "3.4fr 1.6fr",
           gap: 32,
           maxWidth: 1400,
           margin: "0 auto",
-          alignItems: "stretch",
         }}
       >
-        {/* ================= LEWY BLOK (WIĘKSZY + WYŻSZY) ================= */}
         <div
           className="admin-block glass"
           style={{
-            minHeight: 540, // <— WYŻEJ (blok), a nie przyciski
-            padding: 24,
+            minHeight: 540,
+            padding: 28,
             display: "flex",
             flexDirection: "column",
           }}
         >
-          {/* HEADER */}
+          <h3 style={{ margin: "0 0 16px 0" }}>Produkty w koszyku</h3>
+
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 12,
               marginBottom: 18,
-              flexShrink: 0,
             }}
           >
             <input
               type="checkbox"
               checked={allChecked}
               onChange={e => toggleAll(e.target.checked)}
+              style={{ transform: "scale(1.1)" }}
             />
             <span>Zaznacz wszystko</span>
 
             <button
-              className="admin-action secondary"
-              style={{ marginLeft: "auto" }}
               onClick={() => setItems(items.filter(i => !i.checked))}
+              style={{
+                marginLeft: "auto",
+                padding: "8px 14px",
+                borderRadius: 14,
+                border: "none",
+                background: "rgba(255,255,255,0.12)",
+                color: "#fff",
+                fontSize: 14,
+                cursor: "pointer",
+              }}
             >
               Usuń zaznaczone
             </button>
           </div>
 
-          {/* LISTA (SCROLL gdy dużo) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, overflow: "auto" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              overflow: "auto",
+            }}
+          >
             {items.map(item => (
               <div
                 key={item.id}
-                className="glass"
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "24px 90px 1fr auto auto auto",
-                  gap: 18,
+                  gridTemplateColumns:
+                    "28px 88px 1fr 150px 110px 40px",
                   alignItems: "center",
-                  padding: 18,
+                  gap: 16,
+                  padding: "18px 20px",
+                  borderRadius: 18,
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
                 <input
                   type="checkbox"
                   checked={item.checked}
                   onChange={() => toggleOne(item.id)}
+                  style={{ transform: "scale(1.1)" }}
                 />
 
                 <img
                   src={item.image}
                   alt={item.name}
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 12,
+                    width: 72,
+                    height: 72,
+                    borderRadius: 14,
                     objectFit: "cover",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
                   }}
                 />
 
                 <div>
-                  <div style={{ fontWeight: 600 }}>{item.name}</div>
-                  <div style={{ fontSize: 13, opacity: 0.6 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>
+                    {item.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      opacity: 0.6,
+                      marginTop: 4,
+                    }}
+                  >
                     {item.price.toFixed(2)} zł / szt.
                   </div>
                 </div>
 
-                {/* ===== ILOŚĆ: MNIEJSZE PRZYCISKI, WIĘKSZE ZNAKI, RÓWNE WYŚRODKOWANIE ===== */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "6px 12px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(6px)",
+                    justifyContent: "center",
+                  }}
+                >
                   <button
-                    className="admin-action"
-                    style={{
-                      width: 30,
-                      height: 30,
-                      padding: 0,
-                      fontSize: 20,          // większy znak
-                      lineHeight: "30px",
-                      borderRadius: 10,
-                    }}
+                    style={qtyButtonStyle}
                     onClick={() => changeQty(item.id, -1)}
-                    aria-label="Zmniejsz ilość"
                   >
                     −
                   </button>
 
-                  <div
+                  <span
                     style={{
-                      width: 32,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
                       fontWeight: 700,
-                      fontSize: 16,
+                      width: 22,
+                      textAlign: "center",
                     }}
                   >
                     {item.quantity}
-                  </div>
+                  </span>
 
                   <button
-                    className="admin-action"
-                    style={{
-                      width: 30,
-                      height: 30,
-                      padding: 0,
-                      fontSize: 20,          // większy znak
-                      lineHeight: "30px",
-                      borderRadius: 10,
-                    }}
+                    style={qtyButtonStyle}
                     onClick={() => changeQty(item.id, 1)}
-                    aria-label="Zwiększ ilość"
                   >
                     +
                   </button>
                 </div>
 
-                <div style={{ fontWeight: 600, minWidth: 110 }}>
+                <div
+                  style={{
+                    fontWeight: 800,
+                    fontSize: 16,
+                    textAlign: "right",
+                  }}
+                >
                   {(item.price * item.quantity).toFixed(2)} zł
                 </div>
 
-                {/* USUŃ */}
                 <button
-                  className="admin-action danger"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    padding: 0,
-                    borderRadius: 10,
-                    fontSize: 16,
-                    lineHeight: "32px",
-                  }}
                   onClick={() => removeItem(item.id)}
-                  aria-label="Usuń produkt"
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    border: "none",
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#fff",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
                   🗑
                 </button>
@@ -217,12 +257,11 @@ export default function UserCart() {
           </div>
         </div>
 
-        {/* ================= PRAWY BLOK (WIĘKSZY + WIĘKSZY PADDING) ================= */}
         <div
           className="admin-block glass"
           style={{
-            minHeight: 540,          // <— WYŻEJ (blok)
-            padding: "40px 40px",    // <— WIĘCEJ ODDECHU od krawędzi
+            minHeight: 540,
+            padding: "40px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -233,38 +272,46 @@ export default function UserCart() {
 
           <div style={{ textAlign: "center" }}>
             <div style={{ opacity: 0.85 }}>Razem</div>
-            <div style={{ fontSize: 32, fontWeight: 800, marginTop: 8 }}>
+            <div
+              style={{
+                fontSize: 32,
+                fontWeight: 800,
+                marginTop: 8,
+              }}
+            >
               {total.toFixed(2)} zł
             </div>
           </div>
 
           <button
-            className="admin-action"
             style={{
               width: "80%",
               margin: "0 auto",
-              display: "block",
-              background: "linear-gradient(135deg, #2ecc71, #27ae60)",
+              background:
+                "linear-gradient(135deg, #2ecc71, #27ae60)",
               color: "#fff",
               fontSize: 16,
-              padding: "14px 0",  // normalna wysokość (nie powiększam przesadnie)
+              padding: "14px 0",
               borderRadius: 16,
+              border: "none",
+              cursor: "pointer",
             }}
           >
             ZAMÓW
           </button>
 
           <button
-            className="admin-action secondary"
+            onClick={() => navigate(-1)}
             style={{
               width: "80%",
               margin: "0 auto",
-              display: "block",
-              fontSize: 15,
               padding: "12px 0",
               borderRadius: 16,
+              border: "none",
+              background: "rgba(255,255,255,0.85)",
+              fontSize: 15,
+              cursor: "pointer",
             }}
-            onClick={() => navigate(-1)}
           >
             ← Wróć
           </button>
