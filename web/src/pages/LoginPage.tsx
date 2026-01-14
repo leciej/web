@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createGuest, login } from "../api/users.api";
 import { useUser } from "../context/UserContext";
 import { AuthLayout } from "../layout/AuthLayout";
-import type { User } from "../types/User";
+import type { User } from "../types/user";
 
 type Mode = "user" | "admin" | null;
 

@@ -1,6 +1,7 @@
 export type User = {
-  id: string;
+  id: number; // ✅ KLUCZOWE
   login?: string;
   email?: string;
+  role?: "Admin" | "User";
   isAdmin: boolean;
 };
