@@ -15,6 +15,22 @@ type RatingResponse = {
 };
 
 /* =========================
+   HELPERS
+========================= */
+
+const getCurrentUserId = (): number | null => {
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+
+  try {
+    const user = JSON.parse(raw);
+    return typeof user.id === "number" ? user.id : null;
+  } catch {
+    return null;
+  }
+};
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -32,6 +48,10 @@ export default function UserGalleryDetailsPage() {
     myRating: null,
   });
 
+  const [hoveredStar, setHoveredStar] = useState<number | null>(null);
+  const [justRated, setJustRated] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
   /* =========================
      LOAD ITEM
   ========================= */
@@ -40,10 +60,9 @@ export default function UserGalleryDetailsPage() {
     if (!id) return;
 
     getGallery()
-      .then(items => {
-        const found = items.find(i => i.id === id);
+      .then((items) => {
+        const found = items.find((i) => i.id === id);
         if (!found) {
-          alert("Nie znaleziono arcydzieła");
           navigate("/user/gallery");
           return;
         }
@@ -53,36 +72,57 @@ export default function UserGalleryDetailsPage() {
   }, [id, navigate]);
 
   /* =========================
-     LOAD RATINGS (Z BAZY)
+     LOAD RATINGS
   ========================= */
 
-  useEffect(() => {
+  const loadRatings = async () => {
     if (!id) return;
 
-    http
-      .get<RatingResponse>(`/api/gallery/${id}/ratings`)
-      .then(res => setRating(res))
-      .catch(() =>
-        setRating({ average: 0, votes: 0, myRating: null })
-      );
+    const userId = getCurrentUserId();
+    const url = userId
+      ? `/api/gallery/${id}/ratings?userId=${userId}`
+      : `/api/gallery/${id}/ratings`;
+
+    const res = await http.get<RatingResponse>(url);
+    setRating(res);
+    setJustRated(null); // ⬅️ po synchronizacji z backendem
+  };
+
+  useEffect(() => {
+    loadRatings();
   }, [id]);
 
   /* =========================
-     RATE (ZAPIS DO BAZY)
+     TOAST
+  ========================= */
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  /* =========================
+     RATE
   ========================= */
 
   const rate = async (value: number) => {
     if (!id || rating.myRating !== null) return;
 
-    try {
-      await http.post(`/api/gallery/${id}/ratings`, { value });
-      const refreshed = await http.get<RatingResponse>(
-        `/api/gallery/${id}/ratings`
-      );
-      setRating(refreshed);
-    } catch {
-      alert("Nie udało się dodać oceny");
+    const userId = getCurrentUserId();
+    if (!userId) {
+      showToast("Musisz być zalogowany, aby ocenić");
+      return;
     }
+
+    await http.post(`/api/gallery/${id}/ratings`, {
+      userId,
+      value,
+    });
+
+    setJustRated(value);      // ⬅️ NATYCHMIAST
+    showToast(`Dziękujemy za ocenę ⭐ ${value}/5`);
+
+    await loadRatings();      // ⬅️ średnia + votes z backendu
   };
 
   /* =========================
@@ -90,25 +130,54 @@ export default function UserGalleryDetailsPage() {
   ========================= */
 
   const renderStars = (active: number, clickable = false) =>
-    [1, 2, 3, 4, 5].map(v => (
-      <span
-        key={v}
-        onClick={clickable ? () => rate(v) : undefined}
-        style={{
-          fontSize: 30,
-          cursor: clickable ? "pointer" : "default",
-          color: v <= active ? "#facc15" : "#444",
-          marginRight: 6,
-        }}
-      >
-        ★
-      </span>
-    ));
+    [1, 2, 3, 4, 5].map((v) => {
+      const isActive =
+        clickable && hoveredStar !== null
+          ? v <= hoveredStar
+          : v <= active;
+
+      return (
+        <span
+          key={v}
+          onMouseEnter={clickable ? () => setHoveredStar(v) : undefined}
+          onMouseLeave={clickable ? () => setHoveredStar(null) : undefined}
+          onClick={clickable ? () => rate(v) : undefined}
+          style={{
+            fontSize: 30,
+            cursor: clickable ? "pointer" : "default",
+            color: isActive ? "#facc15" : "#444",
+            marginRight: 6,
+            transition: "color .15s ease",
+          }}
+        >
+          ★
+        </span>
+      );
+    });
 
   if (loading || !item) return null;
 
   return (
     <div className="admin-root">
+      {/* TOAST */}
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            background: "#2563eb",
+            color: "#fff",
+            padding: "12px 18px",
+            borderRadius: 12,
+            fontWeight: 600,
+            zIndex: 9999,
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       <div style={{ maxWidth: 1500, margin: "0 auto" }}>
         {/* HEADER */}
         <div
@@ -133,7 +202,6 @@ export default function UserGalleryDetailsPage() {
               fontWeight: 900,
               letterSpacing: 0.5,
               color: "rgba(255,255,255,0.92)",
-              userSelect: "none",
             }}
           >
             Szczegóły arcydzieła
@@ -142,7 +210,7 @@ export default function UserGalleryDetailsPage() {
           <div />
         </div>
 
-        {/* IMAGE – CLICK TO ZOOM */}
+        {/* IMAGE */}
         <div
           className="admin-block glass"
           style={{
@@ -204,6 +272,7 @@ export default function UserGalleryDetailsPage() {
 
           {/* RATINGS */}
           <div className="admin-block glass" style={{ padding: 32 }}>
+            {/* ŚREDNIA */}
             <div style={{ marginBottom: 12 }}>
               {renderStars(Math.round(rating.average))}
             </div>
@@ -212,23 +281,34 @@ export default function UserGalleryDetailsPage() {
               {rating.average.toFixed(1)} / 5 ({rating.votes} ocen)
             </div>
 
+            {/* TWOJA OCENA */}
             <div style={{ marginTop: 28, fontWeight: 700 }}>
-              {rating.myRating
-                ? `Twoja ocena: ${rating.myRating}/5`
-                : "Oceń arcydzieło"}
+              Twoja ocena
             </div>
 
             <div style={{ marginTop: 14 }}>
               {renderStars(
-                rating.myRating ?? 0,
+                rating.myRating ?? justRated ?? 0,
                 rating.myRating === null
               )}
             </div>
+
+            {(rating.myRating !== null || justRated !== null) && (
+              <div
+                style={{
+                  marginTop: 12,
+                  fontSize: 14,
+                  color: "#2563eb",
+                }}
+              >
+                Dziękujemy za ocenę ⭐ ({justRated ?? rating.myRating}/5)
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ZOOM OVERLAY – CLICK TO CLOSE */}
+      {/* ZOOM */}
       {zoom && (
         <div
           onClick={() => setZoom(false)}
