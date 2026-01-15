@@ -2,17 +2,32 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCart } from "../../api/cart.api";
 
-// Helper do ID
-const getUserId = (): number | undefined => {
+/* =========================
+   TYPES
+========================= */
+
+// Definiujemy strukturę elementu w koszyku
+interface CartItem {
+  id: string | number;
+  quantity: number;
+  // Możesz dodać inne pola, jeśli są zwracane przez API (np. price, title)
+}
+
+// Helper do ID - poprawiony typ zwracany na number | null
+const getUserId = (): number | null => {
   const raw = localStorage.getItem("user");
-  if (!raw) return undefined;
+  if (!raw) return null;
   try {
     const user = JSON.parse(raw);
-    return typeof user.id === "number" ? user.id : undefined;
+    return typeof user.id === "number" ? user.id : null;
   } catch {
-    return undefined;
+    return null;
   }
 };
+
+/* =========================
+   COMPONENT
+========================= */
 
 export default function UserDashboardPage() {
   const [cartCount, setCartCount] = useState<number>(0);
@@ -23,9 +38,11 @@ export default function UserDashboardPage() {
       if (!userId) return;
 
       try {
-        const items = await getCart(userId) as any[];
+        // 🔥 POPRAWKA: Używamy CartItem[] zamiast any[]
+        const items = await getCart(userId) as CartItem[];
         
         if (Array.isArray(items)) {
+          // Teraz TypeScript wie, że 'item' ma pole 'quantity'
           const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
           setCartCount(totalCount);
         }
@@ -51,28 +68,26 @@ export default function UserDashboardPage() {
         </Link>
 
         <Link to="/user/cart" className="admin-block">
-          {/* Kontener Flexbox dla Nagłówka i Badge'a */}
           <div 
             style={{ 
               display: "flex", 
-              alignItems: "center",       // Wyrównanie w pionie (środek)
-              justifyContent: "center",   // Wyrównanie w poziomie (środek)
-              gap: "12px",                // Odstęp między napisem a kółkiem
-              marginBottom: "8px"         // Odstęp od dolnego opisu
+              alignItems: "center", 
+              justifyContent: "center", 
+              gap: "12px", 
+              marginBottom: "8px" 
             }}
           >
-            {/* margin: 0 jest ważne, żeby domyślny styl h2 nie przesuwał tekstu */}
             <h2 style={{ margin: 0 }}>Koszyk</h2>
 
             {cartCount > 0 && (
               <span style={{
                 background: "#2563eb",
                 color: "white",
-                padding: "2px 10px",      // Trochę zgrabniejszy padding
+                padding: "2px 10px",
                 borderRadius: "20px",
                 fontSize: "14px",
                 fontWeight: "bold",
-                lineHeight: "1.5",        // Poprawia centrowanie tekstu w kółku
+                lineHeight: "1.5",
                 display: "inline-block"
               }}>
                 {cartCount}

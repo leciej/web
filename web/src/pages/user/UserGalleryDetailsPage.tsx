@@ -31,8 +31,6 @@ const getCurrentUserId = (): number | null => {
   }
 };
 
-// === FIX: Funkcja pomocnicza ===
-// Tylko pobiera dane i zwraca Promise. NIE używa hooków ani setState.
 const fetchRatingsData = async (galleryId: string) => {
   const userId = getCurrentUserId();
   const url = userId
@@ -54,6 +52,7 @@ export default function UserGalleryDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(false);
 
+  // Stan ocen
   const [rating, setRating] = useState<RatingResponse>({
     average: 0,
     votes: 0,
@@ -61,13 +60,15 @@ export default function UserGalleryDetailsPage() {
   });
 
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
+  
+  // justRated trzymamy tylko dla efektu wizualnego "Twoja ocena" w tekście
   const [justRated, setJustRated] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const currentUserId = getCurrentUserId();
 
   /* =========================
-      LOAD ITEM
+       LOAD ITEM
   ========================= */
 
   useEffect(() => {
@@ -86,14 +87,11 @@ export default function UserGalleryDetailsPage() {
   }, [id, navigate]);
 
   /* =========================
-      LOAD RATINGS (NAPRAWIONE)
+       LOAD RATINGS
   ========================= */
 
   useEffect(() => {
     if (!id) return;
-
-    // Pobieramy dane funkcją pomocniczą, a setState robimy dopiero w .then()
-    // To jest bezpieczne dla Reacta i nie powoduje błędów lintera.
     fetchRatingsData(id).then((data) => {
       setRating(data);
       setJustRated(null);
@@ -101,7 +99,7 @@ export default function UserGalleryDetailsPage() {
   }, [id]);
 
   /* =========================
-      TOAST
+       TOAST
   ========================= */
 
   const showToast = (msg: string) => {
@@ -110,7 +108,7 @@ export default function UserGalleryDetailsPage() {
   };
 
   /* =========================
-      CART
+       CART
   ========================= */
 
   const handleAddToCart = async () => {
@@ -132,7 +130,7 @@ export default function UserGalleryDetailsPage() {
   };
 
   /* =========================
-      RATE
+       RATE (POPRAWIONE)
   ========================= */
 
   const rate = async (value: number) => {
@@ -144,23 +142,45 @@ export default function UserGalleryDetailsPage() {
       return;
     }
 
-    // 1. Wysyłamy ocenę
-    await http.post(`/api/gallery/${id}/ratings`, {
-      userId,
-      value,
-    });
-
-    // 2. Ustawiamy lokalnie gwiazdkę (UX)
+    // 1. Ustawiamy stan "justRated" dla UX
     setJustRated(value);
-    showToast(`Dziękujemy za ocenę ⭐ ${value}/5`);
 
-    // 3. Pobieramy świeże średnie z backendu używając funkcji pomocniczej
-    const newData = await fetchRatingsData(id);
-    setRating(newData); 
+    try {
+      // 2. Wysyłamy request
+      await http.post(`/api/gallery/${id}/ratings`, {
+        userId,
+        value,
+      });
+
+      showToast(`Dziękujemy za ocenę ⭐ ${value}/5`);
+
+      // 🔥 KLUCZOWA POPRAWKA: Ręczna aktualizacja stanu lokalnego (Optimistic Update)
+      // Dzięki temu gwiazdki zablokują się natychmiast, a licznik głosów wzrośnie o 1.
+      setRating((prev) => ({
+        ...prev,
+        myRating: value,        // Ustawiamy, że użytkownik już ocenił
+        votes: prev.votes + 1,  // Dodajemy głos do licznika
+        // Średniej 'average' nie ruszamy ręcznie, bo to skomplikowana matematyka.
+        // Zaktualizuje się ona chwilę później po fetchu.
+      }));
+
+      // 3. Pobieramy świeże dane z backendu (dla pewności, żeby wyrównać średnią)
+      // Dodajemy małe opóźnienie (300ms), żeby baza danych zdążyła przeliczyć średnią
+      setTimeout(() => {
+        fetchRatingsData(id).then(newData => {
+           setRating(newData);
+        });
+      }, 300);
+
+    } catch (error) {
+      console.error(error);
+      showToast("Błąd podczas oceniania");
+      setJustRated(null); // Cofamy w razie błędu
+    }
   };
 
   /* =========================
-      STARS
+       STARS
   ========================= */
 
   const renderStars = (active: number, clickable = false) =>
@@ -327,6 +347,7 @@ export default function UserGalleryDetailsPage() {
             </div>
 
             <div style={{ marginTop: 14 }}>
+              {/* Jeśli rating.myRating jest ustawione (przez fetch lub ręcznie w rate()), gwiazdki nie są klikalne */}
               {renderStars(
                 rating.myRating ?? justRated ?? 0,
                 rating.myRating === null
@@ -341,7 +362,7 @@ export default function UserGalleryDetailsPage() {
                   color: "#2563eb",
                 }}
               >
-                Dziękujemy za ocenę ⭐ ({justRated ?? rating.myRating}/5)
+                Dziękujemy za ocenę ⭐ ({rating.myRating ?? justRated}/5)
               </div>
             )}
           </div>

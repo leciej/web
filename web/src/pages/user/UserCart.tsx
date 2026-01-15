@@ -9,6 +9,39 @@ import {
 } from '../../api/cart.api';
 import { checkout } from '../../api/checkout.api';
 
+/* ================= TYPES ================= */
+
+/** * Interfejs dla surowych danych z backendu. 
+ * Obsługuje różne warianty nazewnictwa pól (PascalCase i camelCase).
+ */
+interface RawCartItem {
+  cartItemId?: string;
+  CartItemId?: string;
+  id?: string;
+  Id?: string;
+  targetId?: string;
+  TargetId?: string;
+  name?: string;
+  Name?: string;
+  price?: number;
+  Price?: number;
+  quantity?: number;
+  Quantity?: number;
+  imageUrl?: string | null;
+  ImageUrl?: string | null;
+}
+
+interface CartItemFull {
+  cartItemId: string;
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl?: string | null;
+}
+
+/* ================= HELPERS ================= */
+
 const FALLBACK_IMAGE = 'https://picsum.photos/200/200?blur=1';
 
 const formatPrice = (value: number): string =>
@@ -25,14 +58,7 @@ const getUserId = (): number | undefined => {
   }
 };
 
-interface CartItemFull {
-  cartItemId: string;
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  imageUrl?: string | null;
-}
+/* ================= COMPONENT ================= */
 
 export default function UserCart() {
   const navigate = useNavigate();
@@ -47,16 +73,18 @@ export default function UserCart() {
     if (!userId) return;
     
     try {
-      const rawData = await getCart(userId) as any[];
+      // 🔥 NAPRAWA 1: Zastąpienie 'any[]' przez 'RawCartItem[]'
+      const rawData = (await getCart(userId)) as RawCartItem[];
       
       if (!Array.isArray(rawData)) {
          setItems([]);
          return;
       }
 
+      // Mapowanie uwzględniające niespójne nazewnictwo z API
       const mappedData: CartItemFull[] = rawData.map(item => ({
-        cartItemId: item.cartItemId || item.CartItemId || item.id || item.Id, 
-        id: item.id || item.Id || item.targetId || item.TargetId, 
+        cartItemId: String(item.cartItemId || item.CartItemId || item.id || item.Id), 
+        id: String(item.id || item.Id || item.targetId || item.TargetId), 
         name: item.name || item.Name || "Produkt bez nazwy",
         price: item.price || item.Price || 0,
         quantity: item.quantity || item.Quantity || 1,
@@ -127,8 +155,10 @@ export default function UserCart() {
       setChecked({});
       await loadCart();
       alert('Zamówienie złożone pomyślnie!');
-    } catch (e: any) {
-      alert(`Błąd: ${e.message || "Nie udało się złożyć zamówienia"}`);
+    } catch (e: unknown) {
+      // 🔥 NAPRAWA 2: Bezpieczne typowanie błędu (zamiast e: any)
+      const errorMessage = e instanceof Error ? e.message : "Nie udało się złożyć zamówienia";
+      alert(`Błąd: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -137,14 +167,13 @@ export default function UserCart() {
   /* ================= STYLES ================= */
 
   const btnStyle: React.CSSProperties = {
-     width: 32, height: 32, borderRadius: 8, border: 'none', 
-     background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
-     display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
-     transition: 'background 0.2s'
+      width: 32, height: 32, borderRadius: 8, border: 'none', 
+      background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
+      transition: 'background 0.2s'
   };
 
   return (
-    // Dodałem paddingBottom, żeby dół strony nie był ucięty przy przewijaniu
     <div className="admin-root" style={{ paddingTop: 40, paddingBottom: 80, minHeight: '100vh' }}>
       
       <div 
@@ -155,7 +184,7 @@ export default function UserCart() {
           gap: 32, 
           maxWidth: 1400, 
           margin: '0 auto',
-          alignItems: 'start' // To zapewnia, że kolumny są niezależne na wysokość
+          alignItems: 'start'
         }}
       >
         
@@ -165,7 +194,7 @@ export default function UserCart() {
           style={{ 
             padding: 32, 
             minHeight: 300, 
-            height: 'auto', // 🔥 NAPRAWA: Wymusza rozciąganie się tła do zawartości
+            height: 'auto', 
             overflow: 'visible' 
           }}
         >
@@ -176,13 +205,8 @@ export default function UserCart() {
               <button 
                 onClick={removeSelected} 
                 style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  color: '#f87171', 
-                  cursor: 'pointer', 
-                  fontSize: 14, 
-                  fontWeight: 600,
-                  opacity: 0.9
+                  background: 'transparent', border: 'none', color: '#f87171', 
+                  cursor: 'pointer', fontSize: 14, fontWeight: 600, opacity: 0.9
                 }}
               >
                 Usuń zaznaczone
@@ -266,14 +290,11 @@ export default function UserCart() {
                     
                     <button 
                       onClick={() => onRemove(item.cartItemId)} 
-                      title="Usuń z koszyka"
                       style={{ 
                         ...btnStyle, 
                         background: 'rgba(239, 68, 68, 0.1)', 
                         color: '#f87171' 
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
                     >
                       🗑
                     </button>
@@ -284,7 +305,7 @@ export default function UserCart() {
           )}
         </div>
 
-        {/* PRAWA KOLUMNA - PODSUMOWANIE (STICKY) */}
+        {/* PRAWA KOLUMNA - PODSUMOWANIE */}
         <div 
           className="admin-block glass" 
           style={{ 
@@ -314,7 +335,6 @@ export default function UserCart() {
             onClick={order} 
             style={{ 
               width: '100%', 
-              display: 'block', 
               background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
               color: '#fff', 
               padding: '16px', 
@@ -324,13 +344,8 @@ export default function UserCart() {
               opacity: total === 0 || loading ? 0.6 : 1, 
               fontSize: 16, 
               fontWeight: 700, 
-              letterSpacing: 0.5,
-              marginBottom: 16,
               boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
-              transition: 'transform 0.1s'
             }}
-            onMouseDown={(e) => !loading && (e.currentTarget.style.transform = 'scale(0.98)')}
-            onMouseUp={(e) => !loading && (e.currentTarget.style.transform = 'scale(1)')}
           >
             {loading ? 'Przetwarzanie...' : 'ZAMÓW'}
           </button>
@@ -338,8 +353,8 @@ export default function UserCart() {
           <button 
             onClick={() => navigate(-1)} 
             style={{ 
+              marginTop: 12,
               width: '100%', 
-              display: 'block', 
               padding: 12, 
               borderRadius: 12, 
               border: '1px solid rgba(255,255,255,0.15)', 
@@ -347,10 +362,7 @@ export default function UserCart() {
               background: 'transparent', 
               color: 'rgba(255,255,255,0.8)', 
               fontSize: 14,
-              transition: 'background 0.2s'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             Kontynuuj zakupy
           </button>
