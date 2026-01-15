@@ -1,12 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getProducts, type ProductDto } from "../../api/products.api";
+// 1. Import API
+import { addToCart } from "../../api/cart.api";
+
+// 2. Helper do pobierania ID użytkownika
+const getUserId = (): number | null => {
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    const user = JSON.parse(raw);
+    return typeof user.id === "number" ? user.id : null;
+  } catch {
+    return null;
+  }
+};
 
 export default function UserProductsPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ProductDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortOpen, setSortOpen] = useState(false);
+
+  // Opcjonalnie: blokada przycisku, żeby nie klikać 10 razy
+  const [addingId, setAddingId] = useState<string | null>(null);
+
+  // === 3. STAN TOASTA ===
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   useEffect(() => {
     getProducts()
@@ -43,14 +68,50 @@ export default function UserProductsPage() {
     setSortOpen(false);
   };
 
-  const handleAddToCart = (item: ProductDto) => {
-    console.log("ADD TO CART", item.id);
+  // 4. LOGIKA DODAWANIA DO KOSZYKA (z Toastem)
+  const handleAddToCart = async (item: ProductDto) => {
+    const userId = getUserId();
+    if (!userId) {
+      showToast("Musisz być zalogowany, aby dodać do koszyka");
+      return;
+    }
+
+    try {
+      setAddingId(item.id);
+      await addToCart(item.id, userId);
+      showToast(`Dodano "${item.name}" do koszyka ✅`);
+    } catch (error) {
+      console.error(error);
+      showToast("Błąd podczas dodawania do koszyka");
+    } finally {
+      setAddingId(null);
+    }
   };
 
   if (loading) return <p>Ładowanie produktów…</p>;
 
   return (
     <div className="admin-root">
+      {/* TOAST UI */}
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            background: "#2563eb",
+            color: "#fff",
+            padding: "12px 18px",
+            borderRadius: 12,
+            fontWeight: 600,
+            zIndex: 9999,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       <style>{`
         .sort-item {
           width: 100%;
@@ -157,6 +218,12 @@ export default function UserProductsPage() {
           border-radius: 8px;
           font-weight: 700;
           cursor: pointer;
+          transition: opacity 0.2s;
+        }
+
+        .add-to-cart:disabled {
+          opacity: 0.6;
+          cursor: default;
         }
       `}</style>
 
@@ -303,9 +370,10 @@ export default function UserProductsPage() {
 
             <button
               className="add-to-cart"
+              disabled={addingId === item.id}
               onClick={() => handleAddToCart(item)}
             >
-              Dodaj do koszyka
+              {addingId === item.id ? "Dodawanie..." : "Dodaj do koszyka"}
             </button>
           </div>
         ))}

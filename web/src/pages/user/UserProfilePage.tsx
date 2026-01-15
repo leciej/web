@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 
-// Importujemy z naszego kompletnego pliku users.api.ts
+// Importujemy z naszego API użytkownika
 import { 
   getUserStats, 
   getUserActivity, 
@@ -14,23 +14,24 @@ import {
    HELPERS
    ========================= */
 
-// Mapowanie technicznych nazw zdarzeń na język polski
+// Mapowanie nazw zdarzeń (łączymy nazwy z Backend i Mobile App)
 const label = (type: string): string =>
   ({
+    // Backend types
     "CartItemAdded":     "➕ Dodano do koszyka",
     "CartItemRemoved":   "🗑 Usunięto z koszyka",
     "OrderCreated":      "🛒 Złożono zamówienie",
-    "RatingCreated":     "⭐ Oceniono produkt",
-    "CommentAdded":      "💬 Skomentowano",
+    "RatingCreated":     "⭐ Dodano ocenę",
+    "CommentAdded":      "💬 Dodano komentarz",
     
-    // Fallbacki dla innych typów
+    // Mobile App / Legacy types
     "ADD_TO_CART":       "➕ Dodano do koszyka",
+    "REMOVE_FROM_CART":  "🗑 Usunięto z koszyka",
     "PURCHASE":          "🛒 Złożono zamówienie",
-    "RATING":            "⭐ Oceniono produkt",
-    "COMMENT":           "💬 Skomentowano",
+    "RATING":            "⭐ Dodano ocenę",
+    "COMMENT":           "💬 Dodano komentarz",
   }[type] ?? "Aktywność");
 
-// Formatowanie daty ("5 min temu" lub data)
 function timeAgo(dateInput: string | number): string {
   if (!dateInput) return "-";
   const timestamp = new Date(dateInput).getTime();
@@ -46,26 +47,25 @@ function timeAgo(dateInput: string | number): string {
   return new Date(timestamp).toLocaleDateString();
 }
 
-// Funkcja wyciągająca szczegóły (np. nazwę produktu) z pola dataJson
+// Wyciąganie szczegółów (nazwa produktu, kwota) z JSON-a
 function getDetails(item: ActivityDto): string {
   if (!item.dataJson) return item.message || "";
 
   try {
     const data = JSON.parse(item.dataJson);
 
-    // Jeśli to produkt w koszyku
+    // Produkt (koszyk/ocena)
     if (data.name) return data.name; 
     if (data.Name) return data.Name;
 
-    // Jeśli to zamówienie (pokazujemy kwotę)
+    // Zamówienie
     if (data.total) return `Kwota: ${Number(data.total).toFixed(2)} zł`;
 
-    // Jeśli to ocena
+    // Ocena
     if (data.value) return `Ocena: ${data.value}/5`;
 
     return item.message || "";
   } catch {
-    // W razie błędu parsowania JSON, zwróć po prostu message
     return item.message || "";
   }
 }
@@ -81,7 +81,7 @@ export default function UserProfilePage() {
   const [stats, setStats] = useState<UserStatsDto | null>(null);
   const [activities, setActivities] = useState<ActivityDto[]>([]);
 
-  // Dane do wizytówki (awatar, email)
+  // Dane do wizytówki
   const email = user?.email ?? "user@local";
   const displayName = user?.login || email.split("@")[0];
   const letter = displayName[0]?.toUpperCase() ?? "U";
@@ -89,29 +89,37 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // 1. Pobieranie statystyk
+    // 1. Statystyki
     getUserStats(user.id)
       .then(setStats)
       .catch(() => setStats(null));
 
-    // 2. Pobieranie aktywności
+    // 2. Aktywność
     getUserActivity(user.id)
       .then(res => {
-        // Backend czasem zwraca obiekt { items: [] }, a czasem samą tablicę
-        // Zabezpieczamy się na oba przypadki:
         const items = Array.isArray(res) ? res : ((res as any).items || []);
         
-        // Sortujemy: najnowsze na górze
-        const sorted = items.sort((a, b) => 
+        // === FILTR ===
+        // Pokazujemy tylko akcje użytkownika (jak w apce mobilnej)
+        const userActionTypes = [
+            "CartItemAdded", "ADD_TO_CART",
+            "CartItemRemoved", "REMOVE_FROM_CART",
+            "OrderCreated", "PURCHASE",
+            "RatingCreated", "RATING",
+            "CommentAdded", "COMMENT"
+        ];
+
+        const filtered = items.filter(item => userActionTypes.includes(item.type));
+
+        // Sortowanie od najnowszych
+        const sorted = filtered.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
-        // Bierzemy tylko 5 ostatnich (zgodnie ze stylem Admina)
+        // Limit: 5 ostatnich
         setActivities(sorted.slice(0, 5));
       })
-      .catch(err => {
-         console.error("Błąd pobierania aktywności:", err);
-      });
+      .catch(err => console.error("Błąd aktywności:", err));
   }, [user?.id]);
 
   const handleLogout = () => {
@@ -151,15 +159,15 @@ export default function UserProfilePage() {
               {activities.map((a, i) => (
                 <li key={i} style={{ fontSize: 13, marginBottom: 12 }}>
                   <div style={{fontWeight: 600, marginBottom: 2, display: 'flex', justifyContent: 'space-between'}}>
-                    {/* Typ aktywności (np. Dodano do koszyka) */}
+                    {/* Typ aktywności */}
                     <span>{label(a.type)}</span>
-                    {/* Czas (np. 5 min temu) */}
+                    {/* Czas */}
                     <span style={{ fontSize: 11, opacity: 0.5, fontWeight: 400 }}>
                       {timeAgo(a.createdAt)}
                     </span>
                   </div>
                   
-                  {/* Szczegóły (np. nazwa produktu wyciągnięta z JSON) */}
+                  {/* Szczegóły (np. nazwa produktu) */}
                   <div style={{ fontSize: 12, opacity: 0.8, color: '#a5f3fc' }}>
                     {getDetails(a)}
                   </div>
