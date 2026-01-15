@@ -34,7 +34,18 @@ async function request<T>(
     return undefined as T;
   }
 
-  return res.json();
+  const text = await res.text();
+  
+  if (!text) {
+    return undefined as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch { 
+    // ^ ZMIANA: Usunąłem "(err)", teraz linter nie będzie krzyczał
+    return text as unknown as T;
+  }
 }
 
 export const http = {

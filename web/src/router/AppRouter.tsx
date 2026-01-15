@@ -19,7 +19,9 @@ import UserProductsPage from "../pages/user/UserProductsPage";
 import UserProductDetailsPage from "../pages/user/UserProductDetailsPage";
 import UserGalleryPage from "../pages/user/UserGalleryPage";
 import UserGalleryDetailsPage from "../pages/user/UserGalleryDetailsPage";
-import UserCart from "../pages/CartPage"; // ✅ POPRAWNY IMPORT
+
+// 🔥 ZMIANA: Wskazujemy na plik w folderze 'user', który naprawialiśmy!
+import UserCart from "../pages/user/UserCart"; 
 
 /* ===== ADMIN ===== */
 import AdminStatsPage from "../pages/admin/AdminStatsPage";
@@ -49,7 +51,9 @@ export default function AppRouter() {
         {/* ===== USER ===== */}
         <Route path="/user/dashboard" element={<UserDashboardPage />} />
         <Route path="/user/profile" element={<UserProfilePage />} />
-        <Route path="/user/cart" element={<UserCart />} /> {/* ✅ DZIAŁA */}
+        
+        {/* Tu będzie teraz ładowany właściwy, naprawiony koszyk */}
+        <Route path="/user/cart" element={<UserCart />} />
 
         <Route path="/user/products" element={<UserProductsPage />} />
         <Route

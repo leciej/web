@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getGallery } from "../../api/gallery.api";
 import type { GalleryItemDto } from "../../api/gallery.api";
 import { http } from "../../api/http";
+import { addToCart } from "../../api/cart.api"; 
 
 /* =========================
    TYPES
@@ -30,6 +31,17 @@ const getCurrentUserId = (): number | null => {
   }
 };
 
+// === FIX: Funkcja pomocnicza ===
+// Tylko pobiera dane i zwraca Promise. NIE używa hooków ani setState.
+const fetchRatingsData = async (galleryId: string) => {
+  const userId = getCurrentUserId();
+  const url = userId
+    ? `/api/gallery/${galleryId}/ratings?userId=${userId}`
+    : `/api/gallery/${galleryId}/ratings`;
+
+  return http.get<RatingResponse>(url);
+};
+
 /* =========================
    COMPONENT
 ========================= */
@@ -52,8 +64,10 @@ export default function UserGalleryDetailsPage() {
   const [justRated, setJustRated] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  const currentUserId = getCurrentUserId();
+
   /* =========================
-     LOAD ITEM
+      LOAD ITEM
   ========================= */
 
   useEffect(() => {
@@ -72,28 +86,22 @@ export default function UserGalleryDetailsPage() {
   }, [id, navigate]);
 
   /* =========================
-     LOAD RATINGS
+      LOAD RATINGS (NAPRAWIONE)
   ========================= */
 
-  const loadRatings = async () => {
+  useEffect(() => {
     if (!id) return;
 
-    const userId = getCurrentUserId();
-    const url = userId
-      ? `/api/gallery/${id}/ratings?userId=${userId}`
-      : `/api/gallery/${id}/ratings`;
-
-    const res = await http.get<RatingResponse>(url);
-    setRating(res);
-    setJustRated(null); // ⬅️ po synchronizacji z backendem
-  };
-
-  useEffect(() => {
-    loadRatings();
+    // Pobieramy dane funkcją pomocniczą, a setState robimy dopiero w .then()
+    // To jest bezpieczne dla Reacta i nie powoduje błędów lintera.
+    fetchRatingsData(id).then((data) => {
+      setRating(data);
+      setJustRated(null);
+    });
   }, [id]);
 
   /* =========================
-     TOAST
+      TOAST
   ========================= */
 
   const showToast = (msg: string) => {
@@ -102,7 +110,29 @@ export default function UserGalleryDetailsPage() {
   };
 
   /* =========================
-     RATE
+      CART
+  ========================= */
+
+  const handleAddToCart = async () => {
+    if (!item) return;
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      showToast("Musisz być zalogowany, aby dodać do koszyka");
+      return;
+    }
+
+    try {
+      await addToCart(item.id, userId);
+      showToast(`Dodano "${item.title}" do koszyka 🛒`);
+    } catch (error) {
+      console.error(error);
+      showToast("Nie udało się dodać do koszyka");
+    }
+  };
+
+  /* =========================
+      RATE
   ========================= */
 
   const rate = async (value: number) => {
@@ -114,19 +144,23 @@ export default function UserGalleryDetailsPage() {
       return;
     }
 
+    // 1. Wysyłamy ocenę
     await http.post(`/api/gallery/${id}/ratings`, {
       userId,
       value,
     });
 
-    setJustRated(value);      // ⬅️ NATYCHMIAST
+    // 2. Ustawiamy lokalnie gwiazdkę (UX)
+    setJustRated(value);
     showToast(`Dziękujemy za ocenę ⭐ ${value}/5`);
 
-    await loadRatings();      // ⬅️ średnia + votes z backendu
+    // 3. Pobieramy świeże średnie z backendu używając funkcji pomocniczej
+    const newData = await fetchRatingsData(id);
+    setRating(newData); 
   };
 
   /* =========================
-     STARS
+      STARS
   ========================= */
 
   const renderStars = (active: number, clickable = false) =>
@@ -172,6 +206,7 @@ export default function UserGalleryDetailsPage() {
             borderRadius: 12,
             fontWeight: 600,
             zIndex: 9999,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
           }}
         >
           {toast}
@@ -264,9 +299,14 @@ export default function UserGalleryDetailsPage() {
 
             <button
               className="admin-action primary"
-              style={{ width: "100%", padding: "16px 0" }}
+              style={{ 
+                width: "100%", 
+                padding: "16px 0",
+                opacity: currentUserId ? 1 : 0.7 
+              }}
+              onClick={handleAddToCart}
             >
-              DODAJ DO KOSZYKA
+              {currentUserId ? "DODAJ DO KOSZYKA" : "ZALOGUJ SIĘ ABY KUPIĆ"}
             </button>
           </div>
 
