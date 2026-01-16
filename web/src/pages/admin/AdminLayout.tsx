@@ -1,13 +1,10 @@
-// src/pages/admin/AdminLayout.tsx
 import { Navigate, Outlet, NavLink } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-import { type User } from "../../api/users.api"; // Importujemy interfejs User
+import { type User } from "../../api/users.api";
 
 export default function AdminLayout() {
-  // Rzutujemy kontekst na poprawny typ zawierający interfejs User
   const { user } = useUser() as { user: User | null };
 
-  // Sprawdzamy rolę 'Admin' zamiast niebezpiecznego pola 'isAdmin'
   if (user?.role !== 'Admin') {
     return <Navigate to="/" replace />;
   }

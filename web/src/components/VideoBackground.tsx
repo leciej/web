@@ -11,14 +11,12 @@ export function VideoBackground({
   const darkRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // identycznie jak Splash – oba wideo startują od razu
     lightRef.current?.play().catch(() => {});
     darkRef.current?.play().catch(() => {});
   }, []);
 
   return (
     <>
-      {/* LIGHT VIDEO – zawsze w DOM */}
       <video
         ref={lightRef}
         className={`login-video ${
@@ -31,7 +29,6 @@ export function VideoBackground({
         <source src={videoLight} type="video/mp4" />
       </video>
 
-      {/* DARK VIDEO – zawsze w DOM */}
       <video
         ref={darkRef}
         className={`login-video ${

@@ -19,7 +19,7 @@ export default function AddCommentForm({
     }
 
     try {
-      await addComment(productId, 1, text); // userId = 1 (guest)
+      await addComment(productId, 1, text);
       setSuccess(true);
       setText('');
       setError('');

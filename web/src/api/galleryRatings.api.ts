@@ -1,14 +1,10 @@
 import { http } from "./http";
 
-/* ================= TYPES ================= */
-
 export type GalleryRatingSummaryDto = {
   average: number;
   votes: number;
   myRating: number | null;
 };
-
-/* ================= helpers ================= */
 
 const getCurrentUserId = (): number | null => {
   const raw = localStorage.getItem("user");
@@ -21,8 +17,6 @@ const getCurrentUserId = (): number | null => {
     return null;
   }
 };
-
-/* ================= API ================= */
 
 export const GalleryRatingsApi = {
   getByGalleryItemId: async (

@@ -9,11 +9,6 @@ import {
 } from '../../api/cart.api';
 import { checkout } from '../../api/checkout.api';
 
-/* ================= TYPES ================= */
-
-/** * Interfejs dla surowych danych z backendu. 
- * Obsługuje różne warianty nazewnictwa pól (PascalCase i camelCase).
- */
 interface RawCartItem {
   cartItemId?: string;
   CartItemId?: string;
@@ -40,8 +35,6 @@ interface CartItemFull {
   imageUrl?: string | null;
 }
 
-/* ================= HELPERS ================= */
-
 const FALLBACK_IMAGE = 'https://picsum.photos/200/200?blur=1';
 
 const formatPrice = (value: number): string =>
@@ -58,22 +51,17 @@ const getUserId = (): number | undefined => {
   }
 };
 
-/* ================= COMPONENT ================= */
-
 export default function UserCart() {
   const navigate = useNavigate();
   const [items, setItems] = useState<CartItemFull[]>([]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
-  /* ================= FETCH CART ================= */
-
   const loadCart = useCallback(async (): Promise<void> => {
     const userId = getUserId();
     if (!userId) return;
     
     try {
-      // 🔥 NAPRAWA 1: Zastąpienie 'any[]' przez 'RawCartItem[]'
       const rawData = (await getCart(userId)) as RawCartItem[];
       
       if (!Array.isArray(rawData)) {
@@ -81,7 +69,6 @@ export default function UserCart() {
          return;
       }
 
-      // Mapowanie uwzględniające niespójne nazewnictwo z API
       const mappedData: CartItemFull[] = rawData.map(item => ({
         cartItemId: String(item.cartItemId || item.CartItemId || item.id || item.Id), 
         id: String(item.id || item.Id || item.targetId || item.TargetId), 
@@ -108,8 +95,6 @@ export default function UserCart() {
   useEffect(() => {
     loadCart();
   }, [loadCart]);
-
-  /* ================= LOGIC ================= */
 
   const allChecked = items.length > 0 && items.every((item) => checked[item.id]);
 
@@ -156,15 +141,12 @@ export default function UserCart() {
       await loadCart();
       alert('Zamówienie złożone pomyślnie!');
     } catch (e: unknown) {
-      // 🔥 NAPRAWA 2: Bezpieczne typowanie błędu (zamiast e: any)
       const errorMessage = e instanceof Error ? e.message : "Nie udało się złożyć zamówienia";
       alert(`Błąd: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
-
-  /* ================= STYLES ================= */
 
   const btnStyle: React.CSSProperties = {
       width: 32, height: 32, borderRadius: 8, border: 'none', 
@@ -188,7 +170,6 @@ export default function UserCart() {
         }}
       >
         
-        {/* LEWA KOLUMNA - LISTA */}
         <div 
           className="admin-block glass" 
           style={{ 
@@ -305,7 +286,6 @@ export default function UserCart() {
           )}
         </div>
 
-        {/* PRAWA KOLUMNA - PODSUMOWANIE */}
         <div 
           className="admin-block glass" 
           style={{ 

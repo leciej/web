@@ -25,23 +25,19 @@ export default function RegisterPage() {
     repeat: "",
   });
 
-  const handleChange =
-    (field: keyof RegisterForm) =>
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setForm({ ...form, [field]: e.target.value });
-    };
+  const handleChange = (field: keyof RegisterForm) => (e: ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [field]: e.target.value });
+  };
 
   const handleRegister = async () => {
     const { name, surname, login, email, password, repeat } = form;
 
     if (!name || !surname || !login || !email || !password || !repeat) {
-      alert("Uzupełnij wszystkie pola");
-      return;
+      return alert("Uzupełnij wszystkie pola");
     }
 
     if (password !== repeat) {
-      alert("Hasła nie są takie same");
-      return;
+      return alert("Hasła nie są takie same");
     }
 
     try {
@@ -102,17 +98,11 @@ export default function RegisterPage() {
           onChange={handleChange("repeat")}
         />
 
-        <button
-          className="login-button primary"
-          onClick={handleRegister}
-        >
+        <button className="login-button primary" onClick={handleRegister}>
           Zarejestruj
         </button>
 
-        <button
-          className="login-button admin"
-          onClick={() => navigate("/login")}
-        >
+        <button className="login-button admin" onClick={() => navigate("/login")}>
           Wróć
         </button>
       </div>

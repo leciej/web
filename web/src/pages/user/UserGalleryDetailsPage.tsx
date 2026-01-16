@@ -5,19 +5,11 @@ import type { GalleryItemDto } from "../../api/gallery.api";
 import { http } from "../../api/http";
 import { addToCart } from "../../api/cart.api"; 
 
-/* =========================
-   TYPES
-========================= */
-
 type RatingResponse = {
   average: number;
   votes: number;
   myRating: number | null;
 };
-
-/* =========================
-   HELPERS
-========================= */
 
 const getCurrentUserId = (): number | null => {
   const raw = localStorage.getItem("user");
@@ -40,10 +32,6 @@ const fetchRatingsData = async (galleryId: string) => {
   return http.get<RatingResponse>(url);
 };
 
-/* =========================
-   COMPONENT
-========================= */
-
 export default function UserGalleryDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -52,7 +40,6 @@ export default function UserGalleryDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(false);
 
-  // Stan ocen
   const [rating, setRating] = useState<RatingResponse>({
     average: 0,
     votes: 0,
@@ -60,16 +47,10 @@ export default function UserGalleryDetailsPage() {
   });
 
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
-  
-  // justRated trzymamy tylko dla efektu wizualnego "Twoja ocena" w tekście
   const [justRated, setJustRated] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const currentUserId = getCurrentUserId();
-
-  /* =========================
-       LOAD ITEM
-  ========================= */
 
   useEffect(() => {
     if (!id) return;
@@ -86,10 +67,6 @@ export default function UserGalleryDetailsPage() {
       .finally(() => setLoading(false));
   }, [id, navigate]);
 
-  /* =========================
-       LOAD RATINGS
-  ========================= */
-
   useEffect(() => {
     if (!id) return;
     fetchRatingsData(id).then((data) => {
@@ -98,18 +75,10 @@ export default function UserGalleryDetailsPage() {
     });
   }, [id]);
 
-  /* =========================
-       TOAST
-  ========================= */
-
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
-
-  /* =========================
-       CART
-  ========================= */
 
   const handleAddToCart = async () => {
     if (!item) return;
@@ -129,10 +98,6 @@ export default function UserGalleryDetailsPage() {
     }
   };
 
-  /* =========================
-       RATE (POPRAWIONE)
-  ========================= */
-
   const rate = async (value: number) => {
     if (!id || rating.myRating !== null) return;
 
@@ -142,11 +107,9 @@ export default function UserGalleryDetailsPage() {
       return;
     }
 
-    // 1. Ustawiamy stan "justRated" dla UX
     setJustRated(value);
 
     try {
-      // 2. Wysyłamy request
       await http.post(`/api/gallery/${id}/ratings`, {
         userId,
         value,
@@ -154,18 +117,12 @@ export default function UserGalleryDetailsPage() {
 
       showToast(`Dziękujemy za ocenę ⭐ ${value}/5`);
 
-      // 🔥 KLUCZOWA POPRAWKA: Ręczna aktualizacja stanu lokalnego (Optimistic Update)
-      // Dzięki temu gwiazdki zablokują się natychmiast, a licznik głosów wzrośnie o 1.
       setRating((prev) => ({
         ...prev,
-        myRating: value,        // Ustawiamy, że użytkownik już ocenił
-        votes: prev.votes + 1,  // Dodajemy głos do licznika
-        // Średniej 'average' nie ruszamy ręcznie, bo to skomplikowana matematyka.
-        // Zaktualizuje się ona chwilę później po fetchu.
+        myRating: value,
+        votes: prev.votes + 1,
       }));
 
-      // 3. Pobieramy świeże dane z backendu (dla pewności, żeby wyrównać średnią)
-      // Dodajemy małe opóźnienie (300ms), żeby baza danych zdążyła przeliczyć średnią
       setTimeout(() => {
         fetchRatingsData(id).then(newData => {
            setRating(newData);
@@ -175,13 +132,9 @@ export default function UserGalleryDetailsPage() {
     } catch (error) {
       console.error(error);
       showToast("Błąd podczas oceniania");
-      setJustRated(null); // Cofamy w razie błędu
+      setJustRated(null);
     }
   };
-
-  /* =========================
-       STARS
-  ========================= */
 
   const renderStars = (active: number, clickable = false) =>
     [1, 2, 3, 4, 5].map((v) => {
@@ -213,7 +166,6 @@ export default function UserGalleryDetailsPage() {
 
   return (
     <div className="admin-root">
-      {/* TOAST */}
       {toast && (
         <div
           style={{
@@ -234,7 +186,6 @@ export default function UserGalleryDetailsPage() {
       )}
 
       <div style={{ maxWidth: 1500, margin: "0 auto" }}>
-        {/* HEADER */}
         <div
           style={{
             display: "grid",
@@ -265,7 +216,6 @@ export default function UserGalleryDetailsPage() {
           <div />
         </div>
 
-        {/* IMAGE */}
         <div
           className="admin-block glass"
           style={{
@@ -288,7 +238,6 @@ export default function UserGalleryDetailsPage() {
           />
         </div>
 
-        {/* INFO + RATINGS */}
         <div
           style={{
             display: "grid",
@@ -296,7 +245,6 @@ export default function UserGalleryDetailsPage() {
             gap: 32,
           }}
         >
-          {/* INFO */}
           <div className="admin-block glass" style={{ padding: 32 }}>
             <div style={{ fontSize: 32, fontWeight: 800 }}>
               {item.title}
@@ -330,9 +278,7 @@ export default function UserGalleryDetailsPage() {
             </button>
           </div>
 
-          {/* RATINGS */}
           <div className="admin-block glass" style={{ padding: 32 }}>
-            {/* ŚREDNIA */}
             <div style={{ marginBottom: 12 }}>
               {renderStars(Math.round(rating.average))}
             </div>
@@ -341,13 +287,11 @@ export default function UserGalleryDetailsPage() {
               {rating.average.toFixed(1)} / 5 ({rating.votes} ocen)
             </div>
 
-            {/* TWOJA OCENA */}
             <div style={{ marginTop: 28, fontWeight: 700 }}>
               Twoja ocena
             </div>
 
             <div style={{ marginTop: 14 }}>
-              {/* Jeśli rating.myRating jest ustawione (przez fetch lub ręcznie w rate()), gwiazdki nie są klikalne */}
               {renderStars(
                 rating.myRating ?? justRated ?? 0,
                 rating.myRating === null
@@ -369,7 +313,6 @@ export default function UserGalleryDetailsPage() {
         </div>
       </div>
 
-      {/* ZOOM */}
       {zoom && (
         <div
           onClick={() => setZoom(false)}

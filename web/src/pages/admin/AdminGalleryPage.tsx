@@ -76,7 +76,6 @@ export default function AdminGalleryPage() {
           gap: 24,
         }}
       >
-        {/* ───────────── HEADER ───────────── */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -122,7 +121,6 @@ export default function AdminGalleryPage() {
               ➕ Dodaj arcydzieło
             </Link>
 
-            {/* ───────────── SORT HAMBURGER ───────────── */}
             <div style={{ position: "relative" }}>
               <button
                 className="admin-action secondary"
@@ -181,7 +179,6 @@ export default function AdminGalleryPage() {
           </div>
         </div>
 
-        {/* ───────────── GALLERY ───────────── */}
         {items.map(item => (
           <div
             key={item.id}
@@ -191,7 +188,6 @@ export default function AdminGalleryPage() {
               overflow: "hidden",
             }}
           >
-            {/* IMAGE */}
             <div
               style={{
                 width: "100%",
@@ -211,7 +207,6 @@ export default function AdminGalleryPage() {
               />
             </div>
 
-            {/* HOVER ACTIONS */}
             <div className="gallery-hover">
               <button
                 className="hover-action edit"
@@ -230,7 +225,6 @@ export default function AdminGalleryPage() {
               </button>
             </div>
 
-            {/* TEXT */}
             <div style={{ padding: "14px 8px 0" }}>
               <div style={{ fontWeight: 700 }}>
                 {item.title}
@@ -260,7 +254,6 @@ export default function AdminGalleryPage() {
         ))}
       </div>
 
-      {/* ───────────── STYLES ───────────── */}
       <style>{`
         .gallery-hover {
           position: absolute;

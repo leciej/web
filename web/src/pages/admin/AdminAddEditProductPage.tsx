@@ -22,9 +22,6 @@ export default function AdminAddEditProductPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
 
-  /* =========================
-     LOAD (EDIT MODE)
-     ========================= */
   useEffect(() => {
     if (!isEdit || !id) return;
 
@@ -58,9 +55,6 @@ export default function AdminAddEditProductPage() {
     };
   }, [id, isEdit, navigate]);
 
-  /* =========================
-     IMAGE
-     ========================= */
   const handleFileChange = (file: File | null) => {
     if (!file) return;
 
@@ -73,9 +67,6 @@ export default function AdminAddEditProductPage() {
     setPreviewUrl(url);
   };
 
-  /* =========================
-     SAVE
-     ========================= */
   const save = async () => {
     if (!name.trim() || !description.trim() || !price.trim()) {
       alert("Uzupełnij wszystkie pola");
@@ -113,9 +104,6 @@ export default function AdminAddEditProductPage() {
     }
   };
 
-  /* =========================
-     UI
-     ========================= */
   return (
     <div className="admin-root">
       <div
@@ -145,7 +133,6 @@ export default function AdminAddEditProductPage() {
             gap: 32,
           }}
         >
-          {/* FORM */}
           <div
             className="admin-block glass"
             style={{
@@ -205,7 +192,6 @@ export default function AdminAddEditProductPage() {
             )}
           </div>
 
-          {/* PREVIEW */}
           <div
             className="admin-block glass"
             style={{
@@ -263,7 +249,6 @@ export default function AdminAddEditProductPage() {
           </div>
         </div>
 
-        {/* ACTIONS */}
         <div
           style={{
             display: "flex",

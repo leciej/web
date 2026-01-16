@@ -6,12 +6,12 @@ import type { ProductDto } from "../api/products.api";
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
   const [product, setProduct] = useState<ProductDto | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    getProduct(id).then(setProduct);
+    if (id) {
+      getProduct(id).then(setProduct);
+    }
   }, [id]);
 
   if (!product) return <p>Ładowanie…</p>;
@@ -42,28 +42,18 @@ export default function ProductDetailsPage() {
           />
         )}
 
-        <p style={{ color: "#ddd" }}>
-          {product.description}
-        </p>
+        <p style={{ color: "#ddd" }}>{product.description}</p>
 
-        <p style={{ fontWeight: 800, color: "#fff" }}>
-          {product.price} zł
-        </p>
+        <p style={{ fontWeight: 800, color: "#fff" }}>{product.price} zł</p>
 
-        {/* AKCJE */}
         <div style={{ display: "flex", gap: 16 }}>
-          <button
-            className="admin-action secondary"
-            onClick={() => navigate(-1)}
-          >
+          <button className="admin-action secondary" onClick={() => navigate(-1)}>
             Wróć
           </button>
 
           <button
             className="admin-action primary"
-            onClick={() =>
-              navigate(`/admin/products/edit/${product.id}`)
-            }
+            onClick={() => navigate(`/admin/products/edit/${product.id}`)}
           >
             Edytuj
           </button>

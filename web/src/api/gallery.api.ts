@@ -1,7 +1,5 @@
 import { http } from "./http";
 
-/* ========= DTO ========= */
-
 export interface GalleryItemDto {
   id: string;
   title?: string;
@@ -24,8 +22,6 @@ export interface UpdateGalleryItemRequestDto {
   imageUrl?: string;
 }
 
-/* ========= ITEMS ========= */
-
 export function getGallery() {
   return http.get<GalleryItemDto[]>("/api/gallery");
 }
@@ -43,9 +39,6 @@ export function createGalleryItem(
   );
 }
 
-/**
- * ✅ BACKEND: PUT /api/gallery/{id}
- */
 export function updateGalleryItem(
   id: string,
   payload: UpdateGalleryItemRequestDto
@@ -56,9 +49,6 @@ export function updateGalleryItem(
   );
 }
 
-/**
- * ✅ BACKEND: DELETE /api/gallery/{id}
- */
 export function deleteGalleryItem(id: string) {
   return http.delete<void>(
     `/api/gallery/${id}`

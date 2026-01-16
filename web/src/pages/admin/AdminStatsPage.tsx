@@ -58,7 +58,6 @@ export default function AdminStatsPage() {
   const [chart, setChart] = useState<ChartDay[]>([]);
 
   useEffect(() => {
-    /* ===== PLATFORM STATS ===== */
     getPlatformStats().then(stats => {
       setPlatform(stats);
       setSummary(prev => ({
@@ -67,7 +66,6 @@ export default function AdminStatsPage() {
       }));
     });
 
-    /* ===== PRODUCTS (jak mobilka) ===== */
     getProducts().then(products => {
       setSummary(prev => ({
         ...prev,
@@ -75,7 +73,6 @@ export default function AdminStatsPage() {
       }));
     });
 
-    /* ===== GALLERY (jak mobilka) ===== */
     getGallery().then(gallery => {
       setSummary(prev => ({
         ...prev,
@@ -83,7 +80,6 @@ export default function AdminStatsPage() {
       }));
     });
 
-    /* ===== CHART ===== */
     getOrdersLast7Days().then((data: OrdersChartDto) => {
       setChart(
         data.days.map((d, i) => ({
@@ -109,7 +105,6 @@ export default function AdminStatsPage() {
           gap: 36,
         }}
       >
-        {/* HEADER */}
         <div
           style={{
             display: "flex",
@@ -140,7 +135,6 @@ export default function AdminStatsPage() {
           </div>
         </div>
 
-        {/* SUMMARY */}
         <div
           style={{
             width: BLOCK_WIDTH,
@@ -172,7 +166,6 @@ export default function AdminStatsPage() {
           ))}
         </div>
 
-        {/* PLATFORM */}
         <div
           className="admin-block glass"
           style={{ padding: 32, width: BLOCK_WIDTH, margin: "0 auto" }}
@@ -203,7 +196,6 @@ export default function AdminStatsPage() {
           </div>
         </div>
 
-        {/* CHART */}
         <div
           className="admin-block glass"
           style={{ padding: 32, width: BLOCK_WIDTH, margin: "0 auto" }}

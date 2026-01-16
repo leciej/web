@@ -1,15 +1,10 @@
-// src/pages/admin/AdminLayout.tsx
-
 import { Navigate, Outlet, NavLink } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-// Importujemy interfejs User z Twojego pliku api
-import { type User } from "../../api/users.api"; 
+import { type User } from "../../api/users.api";
 
 export default function AdminLayout() {
-  const { user } = useUser() as { user: User | null }; // Rzutujemy kontekst na poprawny typ
+  const { user } = useUser() as { user: User | null };
 
-  // Sprawdzamy rolę bez użycia 'any'
-  // Dzięki importowi User, TS podpowiada teraz pola: id, login, email, role
   if (user?.role !== 'Admin') {
     return <Navigate to="/" replace />;
   }

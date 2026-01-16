@@ -65,7 +65,6 @@ export default function AdminProductsPage() {
 
   return (
     <div className="admin-root">
-      {/* lokalny CSS */}
       <style>{`
         .product-tile .product-actions {
           opacity: 0;
@@ -104,7 +103,6 @@ export default function AdminProductsPage() {
           gap: 24,
         }}
       >
-        {/* HEADER */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -141,7 +139,6 @@ export default function AdminProductsPage() {
               ➕ Dodaj produkt
             </Link>
 
-            {/* SORT HAMBURGER */}
             <div style={{ position: "relative" }}>
               <button
                 className="admin-action secondary"
@@ -200,7 +197,6 @@ export default function AdminProductsPage() {
           </div>
         </div>
 
-        {/* GRID */}
         {items.map(item => (
           <div
             key={item.id}
@@ -269,7 +265,6 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            {/* HOVER ACTIONS */}
             <div
               className="product-actions"
               style={{

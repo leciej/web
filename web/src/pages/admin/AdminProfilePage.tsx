@@ -8,10 +8,6 @@ import {
   type Activity,
 } from "../../features/activityStore";
 
-/* =========================
-   HELPERS
-   ========================= */
-
 const isAdminType = (type: string): boolean =>
   [
     "ADD_PRODUCT",
@@ -69,7 +65,6 @@ export default function AdminProfilePage() {
   return (
     <div className="admin-root">
       <div className="admin-grid-2x2">
-        {/* PROFIL */}
         <div className="admin-block glass">
           <div className="admin-profile">
             <div className="admin-avatar">{letter}</div>
@@ -79,7 +74,6 @@ export default function AdminProfilePage() {
           </div>
         </div>
 
-        {/* OSTATNIA AKTYWNOŚĆ */}
         <div className="admin-block glass">
           <h2>Ostatnia aktywność</h2>
 
@@ -99,7 +93,6 @@ export default function AdminProfilePage() {
           )}
         </div>
 
-        {/* SZYBKIE AKCJE */}
         <div className="admin-block glass">
           <h2>Szybkie akcje</h2>
 
@@ -127,7 +120,6 @@ export default function AdminProfilePage() {
           </Link>
         </div>
 
-        {/* NAWIGACJA */}
         <div className="admin-block glass center">
           <div
             style={{

@@ -25,9 +25,6 @@ export default function AdminAddEditGalleryPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
 
-  /* =========================
-     LOAD (EDIT MODE)
-     ========================= */
   useEffect(() => {
     if (!isEdit || !id) return;
 
@@ -64,9 +61,6 @@ export default function AdminAddEditGalleryPage() {
     };
   }, [id, isEdit, navigate]);
 
-  /* =========================
-     BLOB CLEANUP
-     ========================= */
   useEffect(() => {
     return () => {
       if (previewUrl.startsWith("blob:")) {
@@ -75,9 +69,6 @@ export default function AdminAddEditGalleryPage() {
     };
   }, [previewUrl]);
 
-  /* =========================
-     IMAGE
-     ========================= */
   const handleFileChange = (file: File | null) => {
     if (!file) return;
 
@@ -90,9 +81,6 @@ export default function AdminAddEditGalleryPage() {
     setPreviewUrl(url);
   };
 
-  /* =========================
-     SAVE
-     ========================= */
   const save = async () => {
     if (!title.trim() || !artist.trim() || !price.trim()) {
       alert("Uzupełnij wszystkie pola");
@@ -142,9 +130,6 @@ export default function AdminAddEditGalleryPage() {
     }
   };
 
-  /* =========================
-     UI
-     ========================= */
   return (
     <div className="admin-root">
       <div
@@ -174,7 +159,6 @@ export default function AdminAddEditGalleryPage() {
             gap: 32,
           }}
         >
-          {/* FORM */}
           <div
             className="admin-block glass"
             style={{
@@ -233,7 +217,6 @@ export default function AdminAddEditGalleryPage() {
             )}
           </div>
 
-          {/* PREVIEW */}
           <div
             className="admin-block glass"
             style={{

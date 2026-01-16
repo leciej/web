@@ -1,7 +1,5 @@
 import { http } from "./http";
 
-/* ===== PLATFORM ===== */
-
 export interface PlatformStatsDto {
   purchasedCount: number;
   totalSpent: number;
@@ -14,8 +12,6 @@ export interface PlatformStatsDto {
 export function getPlatformStats() {
   return http.get<PlatformStatsDto>("/api/stats/platform");
 }
-
-/* ===== ORDERS CHART (LAST 7 DAYS) ===== */
 
 export interface OrdersChartDto {
   days: string[];

@@ -8,8 +8,6 @@ import {
   type CommentDto,
 } from "../../api/comments.api";
 
-/* ================= utils ================= */
-
 function formatRelativeDate(dateString: string): string {
   const diff = Math.floor(
     (Date.now() - new Date(dateString).getTime()) / 1000
@@ -35,8 +33,6 @@ const getUserId = (): number | null => {
   }
 };
 
-/* ================= component ================= */
-
 export default function UserProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -50,17 +46,12 @@ export default function UserProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [addingCart, setAddingCart] = useState(false);
   const [addingComment, setAddingComment] = useState(false);
-
-  // === 1. STAN DLA TOASTA ===
   const [toast, setToast] = useState<string | null>(null);
 
-  // === 2. FUNKCJA POKAZUJĄCA TOAST (znika po 2.5s) ===
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
-
-  /* ================= data ================= */
 
   useEffect(() => {
     if (!id) return;
@@ -86,13 +77,10 @@ export default function UserProductDetailsPage() {
     };
   }, [id]);
 
-  /* ================= handlers ================= */
-
   const handleAddToCart = async () => {
     if (!product) return;
 
     if (!userId) {
-      // Zamiast alert -> showToast
       showToast("Musisz być zalogowany, aby dodać do koszyka");
       return;
     }
@@ -100,7 +88,6 @@ export default function UserProductDetailsPage() {
     setAddingCart(true);
     try {
       await addToCart(product.id, userId);
-      // Zamiast alert -> showToast
       showToast(`Dodano "${product.name}" do koszyka ✅`);
     } catch (error) {
       console.error(error);
@@ -122,19 +109,14 @@ export default function UserProductDetailsPage() {
     setComments((prev) => [newComment, ...prev]);
     setCommentText("");
     setAddingComment(false);
-    // Tutaj też możemy dać toasta dla lepszego UX
     showToast("Komentarz dodany pomyślnie 👍");
   };
-
-  /* ================= render ================= */
 
   if (loading) return <p>Ładowanie…</p>;
   if (!product) return <p>Nie znaleziono produktu</p>;
 
   return (
     <div className="admin-root">
-      
-      {/* === 3. WYŚWIETLANIE TOASTA (kod skopiowany z Galerii) === */}
       {toast && (
         <div
           style={{
@@ -169,7 +151,6 @@ export default function UserProductDetailsPage() {
             gap: 48,
           }}
         >
-          {/* IMAGE */}
           <div
             className="admin-block glass"
             style={{
@@ -192,7 +173,6 @@ export default function UserProductDetailsPage() {
             />
           </div>
 
-          {/* INFO + ADD TO CART */}
           <div
             className="admin-block glass"
             style={{
@@ -203,7 +183,6 @@ export default function UserProductDetailsPage() {
               minHeight: 520,
             }}
           >
-            {/* TEXT */}
             <div>
               <h1
                 style={{
@@ -227,7 +206,6 @@ export default function UserProductDetailsPage() {
               </p>
             </div>
 
-            {/* PRICE + CTA */}
             <div>
               <div
                 style={{
@@ -269,7 +247,6 @@ export default function UserProductDetailsPage() {
             </div>
           </div>
 
-          {/* COMMENTS */}
           <div
             className="admin-block glass"
             style={{
@@ -280,7 +257,6 @@ export default function UserProductDetailsPage() {
               flexDirection: "column",
             }}
           >
-            {/* HEADER */}
             <h2
               style={{
                 fontSize: 28,
@@ -291,7 +267,6 @@ export default function UserProductDetailsPage() {
               Komentarze ({comments.length})
             </h2>
 
-            {/* SCROLL CONTAINER */}
             <div
               style={{
                 flex: 1,
@@ -325,7 +300,6 @@ export default function UserProductDetailsPage() {
                     padding: "14px 20px",
                   }}
                 >
-                  {/* META */}
                   <div
                     style={{
                       display: "flex",
@@ -340,7 +314,6 @@ export default function UserProductDetailsPage() {
                     <span>{formatRelativeDate(c.createdAt)}</span>
                   </div>
 
-                  {/* TEXT */}
                   <div
                     style={{
                       fontSize: 15,
@@ -358,7 +331,6 @@ export default function UserProductDetailsPage() {
             </div>
           </div>
 
-          {/* ADD COMMENT */}
           <div
             className="admin-block glass"
             style={{
@@ -369,7 +341,6 @@ export default function UserProductDetailsPage() {
               justifyContent: "space-between",
             }}
           >
-            {/* FORM */}
             <div>
               <h2
                 style={{
@@ -446,7 +417,6 @@ export default function UserProductDetailsPage() {
               </button>
             </div>
 
-            {/* BACK */}
             <button
               onClick={() => navigate(-1)}
               style={{

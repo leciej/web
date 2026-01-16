@@ -20,8 +20,6 @@ export default function LoginPage() {
     try {
       const apiUser = await login(loginOrEmail, password);
 
-      console.log("API USER:", apiUser);
-
       const fullUser: User = {
         ...apiUser,
         isAdmin: target === "admin",
@@ -29,7 +27,6 @@ export default function LoginPage() {
 
       setUser(fullUser);
       localStorage.setItem("user", JSON.stringify(fullUser));
-
       navigate("/after-login");
     } catch (err) {
       console.error(err);
@@ -55,12 +52,8 @@ export default function LoginPage() {
           onClick={async () => {
             try {
               const apiUser = await createGuest();
-
-              const fullUser: User = {
-                ...apiUser,
-                isAdmin: false,
-              };
-
+              const fullUser: User = { ...apiUser, isAdmin: false };
+              
               setUser(fullUser);
               localStorage.setItem("user", JSON.stringify(fullUser));
               navigate("/after-login");
@@ -74,10 +67,7 @@ export default function LoginPage() {
         </button>
 
         {/* USER */}
-        <button
-          className="login-button user"
-          onClick={() => toggleMode("user")}
-        >
+        <button className="login-button user" onClick={() => toggleMode("user")}>
           Zaloguj jako użytkownik
         </button>
 
@@ -88,7 +78,6 @@ export default function LoginPage() {
             value={loginOrEmail}
             onChange={(e) => setLoginOrEmail(e.target.value)}
           />
-
           <div className="login-password">
             <input
               className="login-input"
@@ -97,28 +86,17 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button
-              className="eye"
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-            >
+            <button className="eye" type="button" onClick={() => setShowPassword((v) => !v)}>
               {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
-
-          <button
-            className="login-button primary"
-            onClick={() => handleLogin("user")}
-          >
+          <button className="login-button primary" onClick={() => handleLogin("user")}>
             Zaloguj
           </button>
         </div>
 
         {/* ADMIN */}
-        <button
-          className="login-button admin"
-          onClick={() => toggleMode("admin")}
-        >
+        <button className="login-button admin" onClick={() => toggleMode("admin")}>
           Zaloguj jako admin
         </button>
 
@@ -129,7 +107,6 @@ export default function LoginPage() {
             value={loginOrEmail}
             onChange={(e) => setLoginOrEmail(e.target.value)}
           />
-
           <div className="login-password">
             <input
               className="login-input"
@@ -138,27 +115,16 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button
-              className="eye"
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-            >
+            <button className="eye" type="button" onClick={() => setShowPassword((v) => !v)}>
               {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
-
-          <button
-            className="login-button primary"
-            onClick={() => handleLogin("admin")}
-          >
+          <button className="login-button primary" onClick={() => handleLogin("admin")}>
             Zaloguj
           </button>
         </div>
 
-        <button
-          className="login-button register"
-          onClick={() => navigate("/register")}
-        >
+        <button className="login-button register" onClick={() => navigate("/register")}>
           Zarejestruj się
         </button>
       </div>

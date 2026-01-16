@@ -55,7 +55,6 @@ export default function UserGalleryPage() {
           gap: 24,
         }}
       >
-        {/* ───────────── HEADER ───────────── */}
         <div
           style={{
             gridColumn: "1 / -1",
@@ -66,7 +65,6 @@ export default function UserGalleryPage() {
             gap: 18,
           }}
         >
-          {/* TITLE */}
           <div
             style={{
               fontSize: 22,
@@ -78,7 +76,6 @@ export default function UserGalleryPage() {
             Arcydzieła
           </div>
 
-          {/* BUTTONS – WYŚRODKOWANE */}
           <div
             style={{
               display: "flex",
@@ -87,7 +84,6 @@ export default function UserGalleryPage() {
               gap: 16,
             }}
           >
-            {/* BACK */}
             <button
               className="admin-action secondary"
               style={{ height: 44, minWidth: 160 }}
@@ -96,7 +92,6 @@ export default function UserGalleryPage() {
               ← Wstecz
             </button>
 
-            {/* SORT */}
             <div style={{ position: "relative" }}>
               <button
                 className="admin-action secondary"
@@ -156,7 +151,6 @@ export default function UserGalleryPage() {
           </div>
         </div>
 
-        {/* ───────────── GALLERY ───────────── */}
         {items.map(item => (
           <div
             key={item.id}
@@ -170,7 +164,6 @@ export default function UserGalleryPage() {
               navigate(`/user/gallery/${item.id}`)
             }
           >
-            {/* IMAGE */}
             <div
               className="user-gallery-image"
               style={{
@@ -192,7 +185,6 @@ export default function UserGalleryPage() {
               />
             </div>
 
-            {/* TEXT */}
             <div style={{ padding: "14px 8px 0", textAlign: "center" }}>
               <div style={{ fontWeight: 700 }}>
                 {item.title}
@@ -222,7 +214,6 @@ export default function UserGalleryPage() {
         ))}
       </div>
 
-      {/* ───────────── STYLES ───────────── */}
       <style>{`
         .user-gallery-tile {
           transition: transform .18s ease, box-shadow .18s ease;

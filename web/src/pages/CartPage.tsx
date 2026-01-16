@@ -16,7 +16,6 @@ const FALLBACK_IMAGE = 'https://picsum.photos/200/200?blur=1';
 const formatPrice = (value: number): string =>
   value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-// TODO: podłącz UserContext / auth
 const getUserId = (): number | undefined => undefined;
 
 export default function CartPage() {
@@ -26,12 +25,8 @@ export default function CartPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
-  /* ================= FETCH CART ================= */
-
   const loadCart = useCallback(async (): Promise<void> => {
     const userId = getUserId();
-
-    // 🔥 getCart zwraca BEZPOŚREDNIO CartItemDto[]
     const data: CartItemDto[] = await getCart(userId);
 
     setItems(data);
@@ -49,8 +44,6 @@ export default function CartPage() {
     loadCart();
   }, [loadCart]);
 
-  /* ================= SELECTION ================= */
-
   const allChecked: boolean =
     items.length > 0 &&
     items.every((item: CartItemDto) => checked[item.id]);
@@ -67,8 +60,6 @@ export default function CartPage() {
     setChecked(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  /* ================= TOTAL ================= */
-
   const total: number = items.reduce(
     (sum: number, item: CartItemDto) =>
       checked[item.id]
@@ -76,8 +67,6 @@ export default function CartPage() {
         : sum,
     0
   );
-
-  /* ================= ACTIONS ================= */
 
   const onAdd = async (productId: string): Promise<void> => {
     await addToCart(productId, getUserId());
@@ -146,8 +135,6 @@ export default function CartPage() {
     fontWeight: 700,
     lineHeight: 1,
   };
-
-  /* ================= RENDER ================= */
 
   return (
     <div className="admin-root">

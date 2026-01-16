@@ -1,7 +1,5 @@
 import { http } from './http';
 
-/* ========= DTO ========= */
-
 export interface ProductDto {
   id: string;
   name?: string;
@@ -16,8 +14,6 @@ export interface CreateProductRequestDto {
   price: number;
   imageUrl?: string;
 }
-
-/* ========= ITEMS ========= */
 
 export function getProducts() {
   return http.get<ProductDto[]>('/api/products');

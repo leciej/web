@@ -1,5 +1,3 @@
-// src/features/activity/store/activityStore.ts
-
 export type Activity = {
   type: string;
   createdAt: number;

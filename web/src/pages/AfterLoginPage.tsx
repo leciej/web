@@ -34,11 +34,7 @@ export default function AfterLoginPage() {
     <div className="after-login-root">
       <div className="after-login-overlay" />
 
-      <div
-        className={`after-login-content ${
-          visible ? "visible" : ""
-        }`}
-      >
+      <div className={`after-login-content ${visible ? "visible" : ""}`}>
         <img src={logo} alt="Logo" width={96} height={96} />
         <h1 className="after-login-title">
           Guten Tag, Twoja mać!

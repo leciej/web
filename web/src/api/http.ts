@@ -43,7 +43,6 @@ async function request<T>(
   try {
     return JSON.parse(text);
   } catch { 
-    // ^ ZMIANA: Usunąłem "(err)", teraz linter nie będzie krzyczał
     return text as unknown as T;
   }
 }

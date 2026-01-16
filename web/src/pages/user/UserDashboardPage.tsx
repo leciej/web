@@ -2,18 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCart } from "../../api/cart.api";
 
-/* =========================
-   TYPES
-========================= */
-
-// Definiujemy strukturę elementu w koszyku
 interface CartItem {
   id: string | number;
   quantity: number;
-  // Możesz dodać inne pola, jeśli są zwracane przez API (np. price, title)
 }
 
-// Helper do ID - poprawiony typ zwracany na number | null
 const getUserId = (): number | null => {
   const raw = localStorage.getItem("user");
   if (!raw) return null;
@@ -25,10 +18,6 @@ const getUserId = (): number | null => {
   }
 };
 
-/* =========================
-   COMPONENT
-========================= */
-
 export default function UserDashboardPage() {
   const [cartCount, setCartCount] = useState<number>(0);
 
@@ -38,11 +27,9 @@ export default function UserDashboardPage() {
       if (!userId) return;
 
       try {
-        // 🔥 POPRAWKA: Używamy CartItem[] zamiast any[]
         const items = await getCart(userId) as CartItem[];
         
         if (Array.isArray(items)) {
-          // Teraz TypeScript wie, że 'item' ma pole 'quantity'
           const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
           setCartCount(totalCount);
         }

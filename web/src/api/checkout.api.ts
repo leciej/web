@@ -10,6 +10,5 @@ export const checkout = (userId?: number) => {
     return Promise.reject(new Error("Brak ID użytkownika"));
   }
   
-  // Backend CheckoutController: [HttpPost] /api/checkout, Body: { userId }
   return http.post<CheckoutResponse>("/api/checkout", { userId });
 };

@@ -13,7 +13,6 @@ export function getProductComments(productId: string) {
   );
 }
 
-/* alias dla UI */
 export function addComment(
   productId: string,
   userId: number,
@@ -25,5 +24,4 @@ export function addComment(
   );
 }
 
-/* zostawiamy też tę nazwę (ProductDetailsPage) */
 export const addProductComment = addComment;
